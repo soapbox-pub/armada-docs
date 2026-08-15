@@ -1,0 +1,12 @@
+---
+/**
+ * The sentence under the page title.
+ *
+ * A `<div>` rather than a `<p>`, because the markdown inside a slot compiles to
+ * its own `<p>` — and a `<p>` inside a `<p>` is not nesting the HTML parser
+ * allows. It silently closes the outer one, which leaves the class on an empty
+ * element and the text unstyled beside it.
+ */
+---
+
+<div class="page-lede"><slot /></div>

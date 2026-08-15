@@ -1,0 +1,345 @@
+/*
+ * The "feature page" kit: a lede, a thesis panel, numbered sections separated by
+ * rules, cards, callouts and a closing CTA.
+ *
+ * For long pages that have to persuade as well as instruct — the self-hosting
+ * page is the first — where an unbroken column of prose gives a reader no way to
+ * find the one section they came for.
+ *
+ * Global CSS, deliberately. These wrap MARKDOWN children: the headings and
+ * paragraphs inside `<Section>` are compiled from the `.mdx` file, not from the
+ * component, so Astro's scoped styles never reach them and every rule would have
+ * to be written `:global(...)` anyway. One plain stylesheet is the honest
+ * version of that.
+ *
+ * Everything is built from the tokens in `theme.css`, so both themes and any
+ * future retint follow automatically.
+ */
+
+/* ── The lede ────────────────────────────────────────────────────────────
+   The sentence under the page title. Sized between the h1 and body copy so
+   the page opens with a claim rather than with paperwork. */
+
+.page-lede,
+.page-lede p {
+  margin-block: 0;
+  max-width: 44rem;
+  font-size: clamp(1.0625rem, 2.2vw, 1.3125rem);
+  line-height: 1.6;
+  text-wrap: pretty;
+  color: hsl(var(--muted-foreground));
+}
+
+.page-lede {
+  margin-bottom: 3rem;
+}
+
+.page-lede strong {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+/* ── The thesis panel ────────────────────────────────────────────────────
+   One claim, stated once, before any instructions. The rose hairline down the
+   inline-start edge is the app's own way of marking a surface that is speaking
+   rather than listing. */
+
+.big-idea {
+  margin-block: 2rem 3rem;
+  padding: 1.75rem clamp(1.25rem, 4vw, 2rem);
+  border: 1px solid hsl(var(--border) / 0.55);
+  border-inline-start: 2px solid hsl(var(--primary));
+  border-radius: var(--radius);
+  background: hsl(var(--card) / 0.6);
+}
+
+.big-idea > :first-child {
+  margin-top: 0;
+}
+
+.big-idea > :last-child {
+  margin-bottom: 0;
+}
+
+/* Starlight sizes h2 for a section break; inside the panel it is a title, so it
+   sheds the top margin and the rule it would otherwise carry.
+ *
+ * Starlight wraps every heading in `.sl-heading-wrapper` (the heading plus its
+ * anchor link), so the margins live on the WRAPPER and a rule aimed only at the
+ * `h2` moves nothing. Both are named here, and everywhere else in this file, for
+ * that reason. */
+.big-idea > .sl-heading-wrapper:first-child,
+.big-idea > :is(h2, h3):first-child {
+  margin-top: 0;
+}
+
+.big-idea :is(h2, h3) {
+  margin-top: 0;
+  border: 0;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: clamp(1.25rem, 3vw, 1.625rem);
+  letter-spacing: -0.02em;
+}
+
+/* No anchor link on the thesis or the closer. Both are prose the page says
+   once; neither is a destination anyone deep-links to, and the icon crowds a
+   heading that has no section body of its own. */
+.big-idea .sl-anchor-link,
+.page-cta .sl-anchor-link {
+  display: none;
+}
+
+/* ── Sections ────────────────────────────────────────────────────────────
+   A numbered marker, a heading, and a rule above every section after the
+   first — the rhythm that turns a long page into a set of arrivals. */
+
+.page-section {
+  margin-block: 3.5rem;
+}
+
+.page-section + .page-section,
+.page-section:has(+ .page-cta),
+.page-cta {
+  position: relative;
+  padding-top: 3.5rem;
+}
+
+.page-section + .page-section::before,
+.page-cta::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: 1px;
+  /* Fades out at both ends rather than butting into the column edges: a full
+     hairline reads as a table border, this reads as a horizon. */
+  background: linear-gradient(
+    to right,
+    transparent,
+    hsl(var(--chrome-divider)) 15%,
+    hsl(var(--chrome-divider)) 85%,
+    transparent
+  );
+}
+
+/* The section index. A cut-corner mono chip, the same bevel the buttons use —
+   the app's "hull" shape at the smallest size it still reads at. */
+.section-marker {
+  --cut: 0.375rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 0.1875rem 0.5rem;
+  clip-path: polygon(
+    var(--cut) 0,
+    100% 0,
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    0 100%,
+    0 var(--cut)
+  );
+  background: hsl(var(--accent2) / 0.12);
+  color: hsl(var(--accent2));
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+/* The heading directly under a marker loses its own top margin — the marker is
+   already the space before it. Starlight also draws a rule above an h2, which
+   would double the section divider. */
+.page-section > .section-marker + .sl-heading-wrapper,
+.page-section > .section-marker + :is(h2, h3) {
+  margin-top: 0.5rem;
+}
+
+.page-section > .section-marker + .sl-heading-wrapper :is(h2, h3),
+.page-section > .section-marker + :is(h2, h3) {
+  margin-top: 0;
+  border-top: 0;
+  padding-top: 0;
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+}
+
+/* ── Callouts ────────────────────────────────────────────────────────────
+   Lighter than a Starlight aside, for an aside to the *reader* rather than a
+   warning about the software: "you probably don't need this". */
+
+.callout {
+  display: flex;
+  gap: 1rem;
+  margin-block: 1.75rem;
+  padding: 1.125rem 1.25rem;
+  border: 1px solid hsl(var(--accent2) / 0.28);
+  border-radius: var(--radius);
+  background: hsl(var(--accent2) / 0.06);
+}
+
+.callout-mark {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.7;
+  color: hsl(var(--accent2));
+}
+
+.callout-body > :first-child {
+  margin-top: 0;
+}
+
+.callout-body > :last-child {
+  margin-bottom: 0;
+}
+
+/* ── Cards ───────────────────────────────────────────────────────────────
+   The soft radius of the app's content surfaces, against the near-sharp chrome
+   of the markers and buttons. */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 1rem;
+  margin-block: 1.75rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.375rem;
+  border: 1px solid hsl(var(--border) / 0.55);
+  border-radius: var(--radius);
+  background: hsl(var(--card) / 0.6);
+}
+
+/* A card that is itself a link gets the hover the plain one has no use for. */
+a.card {
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+a.card:hover {
+  border-color: hsl(var(--primary) / 0.6);
+  background: hsl(var(--card) / 0.9);
+}
+
+.card-cue {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: hsl(var(--accent2));
+}
+
+.card .sl-heading-wrapper {
+  margin: 0;
+}
+
+/* A card title is a label on the card, not a section of the page — the anchor
+   would link to something with no body. */
+.card .sl-anchor-link {
+  display: none;
+}
+
+.card :is(h3, h4) {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: hsl(var(--foreground));
+}
+
+.card p {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  text-wrap: pretty;
+  color: hsl(var(--muted-foreground));
+}
+
+.card ul {
+  margin: 0;
+  padding-inline-start: 1.125rem;
+  font-size: 0.9375rem;
+}
+
+/* ── Button rows ─────────────────────────────────────────────────────────
+   Starlight's markdown styles put margins on descendants; the row owns its own
+   spacing. */
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-block: 1.75rem;
+}
+
+.btn-row .btn {
+  margin: 0;
+}
+
+/* ── The closer ──────────────────────────────────────────────────────────
+   The page's last word, centered so it reads as a destination rather than as
+   one more section. */
+
+.page-cta {
+  margin-block: 3.5rem 1rem;
+  text-align: center;
+}
+
+.page-cta > .sl-heading-wrapper:first-of-type {
+  margin-top: 0;
+}
+
+.page-cta :is(h2, h3) {
+  margin-top: 0;
+  border: 0;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: clamp(1.375rem, 3.5vw, 1.875rem);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.page-cta p {
+  margin-inline: auto;
+  max-width: 38rem;
+  text-wrap: pretty;
+  color: hsl(var(--muted-foreground));
+}
+
+.page-cta .btn-row {
+  justify-content: center;
+}
+
+/* The sign-off: the same cyan `$`, rose line and blinking caret the landing
+   page opens and closes on, so a reader who arrived from there recognizes the
+   end of a page. */
+/* Qualified by `.page-cta`, which is where it always sits: the closer's own
+   `p` rule is more specific than a bare `.sign-off` and would mute it. */
+.page-cta .sign-off {
+  margin-top: 2.5rem;
+  font-family: var(--font-mono);
+  font-size: 1.0625rem;
+  color: hsl(var(--primary));
+}
+
+.sign-off .prompt {
+  color: hsl(var(--accent2));
+}
+
+.sign-off .caret {
+  animation: armada-caret 1s step-end infinite;
+}

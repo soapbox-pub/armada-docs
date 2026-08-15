@@ -151,7 +151,7 @@ const structuredData = {
       <ul class="strip">
         <li><a href={LINKS.app} rel="noreferrer">armada.buzz</a></li>
         <li><a href={LINKS.repo} rel="noreferrer">Source</a></li>
-        <li><a href={LINKS.relayRepo} rel="noreferrer">armada-relay</a></li>
+        <li><a href={LINKS.concord} rel="noreferrer">Concord</a></li>
         <li><a href={LINKS.issues} rel="noreferrer">Issues</a></li>
       </ul>
 
@@ -287,50 +287,8 @@ const structuredData = {
     color: hsl(var(--accent2));
   }
 
-  /* ── Buttons ───────────────────────────────────────────────────────────
-     The app's cut-corner (`clip-corner-lg`) button: a beveled dueling-HUD
-     panel rather than a rounded rectangle. The outline variant is translucent
-     so the swell stays faintly visible under it, which keeps the solid primary
-     as the only full-weight fill on the screen. */
-
-  .btn {
-    --cut: 0.7rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 3rem;
-    padding-inline: 1.5rem;
-    border: 1px solid hsl(var(--border));
-    border-radius: 0.55rem;
-    clip-path: polygon(
-      var(--cut) 0,
-      100% 0,
-      100% calc(100% - var(--cut)),
-      calc(100% - var(--cut)) 100%,
-      0 100%,
-      0 var(--cut)
-    );
-    background: hsl(var(--background) / 0.4);
-    color: hsl(var(--foreground));
-    font-size: 1rem;
-    font-weight: 500;
-    text-decoration: none;
-    transition:
-      background-color 0.15s ease,
-      color 0.15s ease;
-  }
-  .btn:hover {
-    background: hsl(var(--secondary));
-  }
-
-  .btn-primary {
-    border-color: transparent;
-    background: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
-  }
-  .btn-primary:hover {
-    background: hsl(var(--primary) / 0.9);
-  }
+  /* The buttons themselves live in `styles/controls.css`, shared with the docs
+     pages. Only the hero's own layout of them is here. */
 
   /* ── The statement ─────────────────────────────────────────────────────── */
 

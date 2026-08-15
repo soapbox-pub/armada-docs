@@ -44,7 +44,14 @@ export const LINKS = {
   downloads: `${APP_URL}/downloads`,
   repo: "https://gitworkshop.dev/soapbox.pub/relay.ngit.dev/armada",
   issues: "https://gitworkshop.dev/soapbox.pub/relay.ngit.dev/armada/issues",
-  relayRepo: "https://gitlab.com/soapbox-pub/armada-relay",
+  /**
+   * The relay Soapbox runs, and the one the self-hosting page points at.
+   *
+   * NOT `armada-relay`, which reads like the obvious choice and is marked
+   * deprecated/testing-only in its own README — its own advice is to point the
+   * client at some other NIP-29 relay instead.
+   */
+  relayRepo: "https://gitlab.com/soapbox-pub/ditto-relay",
   concord: "https://github.com/concord-protocol/concord",
   nostr: "https://github.com/nostr-protocol/nostr",
 } as const;

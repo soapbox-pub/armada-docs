@@ -1,0 +1,29 @@
+---
+/**
+ * One card in a {@link Cards} grid.
+ *
+ * Renders as an `<a>` when given an `href`, so a card that points somewhere is
+ * clickable across its whole face rather than only on a link buried in its last
+ * line. The title is markdown inside the slot (`### …`) for the same reason
+ * {@link Section}'s is: it stays in the page's heading tree.
+ *
+ * `cue` is the small uppercase mono line above the title — a label for what
+ * kind of thing the card is, not a second heading.
+ */
+
+interface Props {
+  cue?: string;
+  href?: string;
+}
+
+const { cue, href } = Astro.props;
+
+/** An off-site link gets `rel`; an internal one has no use for it. */
+const external = href?.startsWith("http");
+const Tag = href ? "a" : "div";
+---
+
+<Tag class="card" href={href} rel={external ? "noreferrer" : undefined}>
+  {cue && <span class="card-cue">{cue}</span>}
+  <slot />
+</Tag>

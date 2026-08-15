@@ -1,0 +1,30 @@
+---
+/**
+ * The closing block of a feature page: a heading, a last paragraph, and the
+ * actions the page has been building toward.
+ *
+ * The sign-off underneath is the landing page's prompt — same cyan `$`, same
+ * rose line, same blinking caret — so a page ends where the site opened.
+ */
+
+interface Props {
+  /** The `$` line. Omit for no sign-off. */
+  signOff?: string;
+}
+
+const { signOff } = Astro.props;
+---
+
+<section class="page-cta">
+  <slot />
+  {
+    signOff && (
+      <p class="sign-off">
+        <span class="prompt">$ </span>{signOff}
+        <span class="caret" aria-hidden="true">
+          _
+        </span>
+      </p>
+    )
+  }
+</section>

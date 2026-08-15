@@ -1,0 +1,72 @@
+/*
+ * Buttons, shared by the landing page and the docs pages.
+ *
+ * The app's cut-corner control (`clip-corner-lg` in armada's `index.css`): a
+ * beveled dueling-HUD panel rather than a rounded rectangle. Global rather than
+ * scoped to one component because both the hand-written pages and the Starlight
+ * pages use it, and two copies of a shape this specific is two things to keep in
+ * step.
+ *
+ * The outline variant is translucent so whatever is behind it — the ASCII sea on
+ * the landing page — stays faintly visible, which keeps the solid primary as the
+ * only full-weight fill on a screen.
+ */
+
+.btn {
+  --cut: 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding-inline: 1.5rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.55rem;
+  clip-path: polygon(
+    var(--cut) 0,
+    100% 0,
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    0 100%,
+    0 var(--cut)
+  );
+  background: hsl(var(--background) / 0.4);
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.btn:hover {
+  background: hsl(var(--secondary));
+  color: hsl(var(--foreground));
+}
+
+.btn-primary {
+  border-color: transparent;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.btn-primary:hover {
+  background: hsl(var(--primary) / 0.9);
+  color: hsl(var(--primary-foreground));
+}
+
+/* The counter-accent variant: a cyan hairline instead of a rose fill, for the
+   secondary half of a pair where an outline would read as disabled. */
+.btn-ghost {
+  border-color: hsl(var(--accent2) / 0.5);
+  color: hsl(var(--accent2));
+}
+
+.btn-ghost:hover {
+  border-color: hsl(var(--accent2));
+  background: hsl(var(--accent2) / 0.1);
+  color: hsl(var(--accent2));
+}

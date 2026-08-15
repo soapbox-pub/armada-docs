@@ -1,0 +1,31 @@
+---
+/**
+ * One numbered section of a feature page: a mono index chip, then whatever
+ * markdown follows it.
+ *
+ * The heading is written as ordinary markdown INSIDE the component rather than
+ * passed as a prop, which is what keeps it in the page's heading tree — so
+ * Starlight's "On this page" still lists it and it still gets an anchor. A
+ * `title` prop would render an `<h2>` that the table of contents, built from
+ * the markdown AST, would never see.
+ *
+ * ```mdx
+ * <Section marker="01">
+ * ## The web client
+ * …
+ * </Section>
+ * ```
+ */
+
+interface Props {
+  /** The index shown in the chip. Two digits, by convention. */
+  marker: string;
+}
+
+const { marker } = Astro.props;
+---
+
+<section class="page-section">
+  <span class="section-marker" aria-hidden="true">{marker}</span>
+  <slot />
+</section>

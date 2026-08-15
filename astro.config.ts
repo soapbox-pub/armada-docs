@@ -32,7 +32,12 @@ export default defineConfig({
        * Armada's own tokens, then the Starlight remap on top. Order matters:
        * `starlight.css` reads the variables `theme.css` defines.
        */
-      customCss: ["./src/styles/theme.css", "./src/styles/starlight.css"],
+      customCss: [
+        "./src/styles/theme.css",
+        "./src/styles/starlight.css",
+        "./src/styles/controls.css",
+        "./src/styles/docs-page.css",
+      ],
 
       /**
        * Starlight emits title/description/canonical and the basic Open Graph

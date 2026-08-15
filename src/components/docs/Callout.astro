@@ -1,0 +1,22 @@
+---
+/**
+ * An aside to the reader — "you probably don't need this" — as opposed to a
+ * Starlight `:::note`, which is an aside about the software. Lighter weight on
+ * purpose: a page that warns about everything warns about nothing.
+ *
+ * The mark is a mono glyph rather than an icon or an emoji, matching the app's
+ * terminal register. It defaults to `!`; pass `mark="?"` for a question and
+ * `mark="$"` where the point is a command.
+ */
+
+interface Props {
+  mark?: string;
+}
+
+const { mark = "!" } = Astro.props;
+---
+
+<aside class="callout">
+  <span class="callout-mark" aria-hidden="true">{mark}</span>
+  <div class="callout-body"><slot /></div>
+</aside>
