@@ -17,5 +17,11 @@ pnpm-debug.log*
 .env
 .env.production
 
+# nsyte's deploy config. It names a specific remote signer by pubkey, which is
+# an account on this machine rather than a property of the site, so it stays out
+# of the repo. `npm run deploy` reads it; recreate it with `nsyte init` (or copy
+# it from another site) on a new checkout.
+.nsite/
+
 # macOS-specific files
 .DS_Store

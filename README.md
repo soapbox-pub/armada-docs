@@ -12,6 +12,7 @@ npm install
 npm run dev      # http://localhost:4321
 npm run build    # -> dist/
 npm run preview  # serve dist/ exactly as it will be deployed
+npm run deploy   # build, then publish to Nostr as an nsite
 ```
 
 `npm run build` is the check: Astro validates the content collection against its
@@ -43,7 +44,32 @@ snippet the crawler picked itself.
 
 ## Deploying
 
-`dist/` is a plain static directory. Two things the host must get right:
+`npm run deploy` builds and then publishes `dist/` to Nostr as an nsite, live at
+
+```
+https://03xkhxfn0gy0yig1qoxkzkbstyssj8kaqkpp6xcdum78yedihparmada-docs.nsite.lol/
+```
+
+Everything identifying that deploy lives in `.nsite/config.json`, which is
+gitignored — it names a remote signer by pubkey, which is an account on one
+machine rather than a property of the site. `"id": "armada-docs"` is what makes
+this a *named* site (kind 35128) instead of the signing account's root site
+(kind 15128), which there is only one of per key and which a stray deploy would
+overwrite. `publishRelayList` and `publishServerList` are both `false` for a
+related reason: they rewrite the signer's account-wide NIP-65 and Blossom lists,
+which has nothing to do with this site.
+
+The script pins nsyte to an exact version and runs it through `deno run` rather
+than an installed binary — an unpinned install has been observed landing on a
+build old enough to publish the previous, incompatible event kind, which
+deploys "successfully" and is invisible on every gateway.
+
+Gateways cache for an hour, so a fresh deploy may not be visible immediately.
+Verify from the manifest instead: it should be kind 35128 with `d=armada-docs`,
+and its `/index.html` hash should equal `sha256sum dist/index.html`.
+
+`dist/` is also a plain static directory, if it is served over HTTP instead.
+Two things such a host must get right:
 
 - **`SITE_URL` in `src/consts.ts` must be the real origin.** It feeds canonical
   links, `sitemap-index.xml` and the absolute `og:image` URLs. A wrong value
