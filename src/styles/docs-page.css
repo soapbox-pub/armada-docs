@@ -371,6 +371,13 @@ a.card {
   font-size: inherit;
 }
 
+/* A title the component printed, which has no `.sl-heading-wrapper` around it
+   to inherit a size from — see `Card.astro` for why a linked card cannot carry
+   a markdown heading. */
+.card > .card-title {
+  font-size: 1.25rem;
+}
+
 .card p {
   margin: 0;
   font-size: 0.9375rem;

@@ -12,12 +12,24 @@
 
 interface Props {
   href?: string;
+  /**
+   * The card's title.
+   *
+   * Rendered by the component rather than written as a markdown `###` in the
+   * slot, which for a LINKED card is not a style preference: Starlight appends
+   * an anchor link to every markdown heading, and an `<a>` inside an `<a>` is
+   * not nesting the HTML parser allows. It closes the card's own link at the
+   * title and leaves the rest of the card outside it, as loose items in the
+   * grid. A title the component prints never passes through that plugin.
+   */
+  title?: string;
 }
 
-const { href } = Astro.props;
+const { href, title } = Astro.props;
 const Tag = href ? "a" : "div";
 ---
 
 <Tag class="card" href={href} rel={href?.startsWith("http") ? "noreferrer" : undefined}>
+  {title && <h3 class="card-title">{title}</h3>}
   <slot />
 </Tag>
