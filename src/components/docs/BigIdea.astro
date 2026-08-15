@@ -1,20 +1,22 @@
 ---
 /**
- * The page's thesis: a giant floating emoji beside one short claim. One per
- * page — a second one is a section.
+ * The page's thesis: a large ASCII mark beside one short claim. One per page —
+ * a second one is a section.
  *
  * Side by side rather than stacked, and with no panel around it, so it reads as
  * the page talking rather than as a callout it could skip.
  */
 
+import AsciiMark from "./AsciiMark.astro";
+
 interface Props {
-  emoji: string;
+  mark: string;
 }
 
-const { emoji } = Astro.props;
+const { mark } = Astro.props;
 ---
 
 <div class="big-idea">
-  <span class="big-idea-emoji" aria-hidden="true">{emoji}</span>
+  <AsciiMark name={mark} class="big-idea-mark" />
   <div class="big-idea-text"><slot /></div>
 </div>

@@ -2,17 +2,21 @@
 /**
  * An aside to the reader — "you probably don't need this", "this one bites" —
  * as opposed to a Starlight `:::note`, which is an aside about the software.
- * Tinted rather than bordered, so it reads as a friendly interruption.
+ * Tinted rather than bordered, so it reads as an interruption rather than a
+ * warning label.
+ *
+ * The mark is a single monospace character, which is an ASCII drawing at its
+ * smallest size: `!` for a thing that bites, `?` for a thing you can skip.
  */
 
 interface Props {
-  emoji?: string;
+  mark?: string;
 }
 
-const { emoji = "⚡" } = Astro.props;
+const { mark = "!" } = Astro.props;
 ---
 
 <aside class="callout">
-  <span class="callout-emoji" aria-hidden="true">{emoji}</span>
+  <span class="callout-mark" aria-hidden="true">{mark}</span>
   <div class="callout-body"><slot /></div>
 </aside>

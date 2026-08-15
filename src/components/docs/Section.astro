@@ -1,26 +1,27 @@
 ---
 /**
- * One section of a feature page: a big floating emoji, the heading beside it,
- * and the body underneath both.
+ * One section of a feature page: an ASCII mark, the heading beside it, and the
+ * body underneath both.
  *
- * The emoji is the navigation. A reader scanning a long how-to finds the part
+ * The mark is the navigation. A reader scanning a long how-to finds the part
  * they came for by shape long before they find it by reading — which is the one
  * thing a numbered chip cannot do, since an index tells you where a section
  * sits and never what it is.
  *
  * The heading itself stays ordinary markdown in the slot, so it keeps its `id`
  * and its place in the table of contents. The grid in `docs-page.css` lifts it
- * up beside the emoji.
+ * up beside the mark.
  */
+import AsciiMark from "./AsciiMark.astro";
 
 interface Props {
-  emoji: string;
+  mark: string;
 }
 
-const { emoji } = Astro.props;
+const { mark } = Astro.props;
 ---
 
 <section class="page-section">
-  <span class="section-emoji" aria-hidden="true">{emoji}</span>
+  <AsciiMark name={mark} class="section-mark" />
   <slot />
 </section>

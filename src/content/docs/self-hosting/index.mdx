@@ -9,11 +9,18 @@ sidebar:
 tableOfContents:
   maxHeadingLevel: 2
 hero:
-  # The mark is an emoji rather than the crest: it is the page's own subject
-  # ("a sovereign harbor"), it floats, and it matches the emoji leading every
-  # section below. `image.html` is the only hook Starlight's hero gives us.
+  # The crest, drawn in text — the same rose sail over a cyan wake the app's
+  # logo is, in the same monospace grid the landing page's ocean is drawn on.
+  # `image.html` is the only hook Starlight's hero gives us.
   image:
-    html: '<span class="page-hero-emoji">⚓</span>'
+    html: |
+      <pre class="ascii-mark hero-mark" aria-hidden="true"><b>    /\</b>
+      <b>   /  \</b>
+      <b>  / /\ \</b>
+      <b> /_/  \_\</b>
+      ~~~~~~~~~~~
+       ~~~~~~~~~
+        ~~~~~~~</pre>
   tagline: Armada communities already run without a host. This is how to own the rest — the app, the relays, and the calls.
   actions:
     - text: Run it
@@ -33,7 +40,7 @@ import Cards from "../../../components/docs/Cards.astro";
 import Cta from "../../../components/docs/Cta.astro";
 import Section from "../../../components/docs/Section.astro";
 
-<BigIdea emoji="🌊">
+<BigIdea mark="sea">
 
 ## Nothing to host
 
@@ -43,7 +50,7 @@ if you want them, the **pipes**. Never the community itself.
 
 </BigIdea>
 
-<Section emoji="🚢">
+<Section mark="ship">
 
 ## Run it
 
@@ -64,7 +71,7 @@ work in a secure context, so voice needs a real certificate anywhere but
 
 </Section>
 
-<Section emoji="⚙️">
+<Section mark="terminal">
 
 ## Configuration
 
@@ -95,12 +102,12 @@ that origin speaks Nostr — and `ws://localhost` means nothing on a phone.
 
 </Section>
 
-<Section emoji="🎨">
+<Section mark="swatches">
 
 ## Branding
 
 <Cards>
-<Card emoji="🖼️">
+<Card>
 
 ### Look
 
@@ -109,7 +116,7 @@ that origin speaks Nostr — and `ws://localhost` means nothing on a phone.
 - **Colors** — `builtinThemes` in `src/themes.ts`
 
 </Card>
-<Card emoji="🌈">
+<Card>
 
 ### Three colors
 
@@ -122,7 +129,7 @@ stylesheet.
 
 </Section>
 
-<Section emoji="📡">
+<Section mark="relay">
 
 ## Relays
 
@@ -145,7 +152,7 @@ everyone: `NOSTR_NSEC` must be the `nsec…` form, and the port is `13131`.
 
 </Section>
 
-<Section emoji="🎙️">
+<Section mark="levels">
 
 ## Voice
 
@@ -177,7 +184,7 @@ never with `/rtc`; the SDK appends that itself.
 
 </Section>
 
-<Section emoji="📱">
+<Section mark="decks">
 
 ## The stock apps still work
 
@@ -191,7 +198,7 @@ costs your members one extra tap.
 
 </Section>
 
-<Cta emoji="🏴‍☠️" signOff="own the whole road">
+<Cta mark="fleet" signOff="own the whole road">
 
 ## Build your own fleet
 

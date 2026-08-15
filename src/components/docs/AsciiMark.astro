@@ -1,0 +1,104 @@
+---
+/**
+ * The section marks: small ASCII drawings in the app's own two colors.
+ *
+ * Armada already draws in text — the landing page's ocean is a monospace grid,
+ * and the crest is a rose sail over three cyan wave lines. These marks are the
+ * same idea at icon size, so a docs page is furnished from the product's
+ * vocabulary rather than from the emoji table.
+ *
+ * Colors inside a drawing are marked up rather than computed:
+ *
+ * - unmarked → cyan, the `--accent2` wake
+ * - `<b>`    → rose, the `--primary` blade
+ * - `<i>`    → gilt-cream, the `--foreground` of the body text
+ *
+ * `<b>`/`<i>` rather than spans with classes purely for legibility: these are
+ * pictures, and one character of markup keeps the drawing readable in source.
+ * The whole mark is `aria-hidden`, so the tag names carry no meaning to
+ * anything that would announce them.
+ *
+ * Characters are from WGL4 (box drawing, block elements, ASCII), the same
+ * constraint the app puts on its own glyphs, so no system font falls back to
+ * tofu. Every drawing is at most 7 rows so they share a baseline height.
+ */
+
+const MARKS: Record<string, string> = {
+  /** The crest: the sail rising out of the wake. */
+  crest: String.raw`<b>    /\</b>
+<b>   /  \</b>
+<b>  / /\ \</b>
+<b> /_/  \_\</b>
+~~~~~~~~~~~
+ ~~~~~~~~~
+  ~~~~~~~`,
+
+  /** Open water, with nothing on it. Drawn from the swell ramp the landing
+      page's ocean uses, so it is literally the same sea at icon size. */
+  sea: String.raw`~~~~~~~~~~~~~
+ ~~~~~~~~~~~
+~~~~~~~~~~~~~
+ ~~~~~~~~~~~
+~~~~~~~~~~~~~`,
+
+  /** One hull under sail — the thing you are about to launch. */
+  ship: String.raw`<b>     /|</b>
+<b>    / |</b>
+<b>   /  |</b>
+<b>  /___|</b>
+<b>  \____/</b>
+~~~~~~~~~~~`,
+
+  /** A terminal window: the build args go in here. */
+  terminal: String.raw` ┌────────┐
+ │<b> $ set</b>  │
+ │<b> $ _</b>    │
+ └────────┘`,
+
+  /** The three core colors every other token is derived from. */
+  swatches: String.raw` ███  <i>███</i>  <b>███</b>
+ ███  <i>███</i>  <b>███</b>
+ ▔▔▔  <i>▔▔▔</i>  <b>▔▔▔</b>`,
+
+  /** A relay: an antenna with traffic arriving. */
+  relay: String.raw`   \  |  /
+    \ | /
+<b>   ((●))</b>
+<b>     |</b>
+<b>    /|\</b>
+<b>   /_|_\</b>`,
+
+  /** Levels on a call. */
+  levels: String.raw`      █
+    █ █ █
+  █ █ █ █ █
+  █ █ █ █ █
+  █ █ █ █ █`,
+
+  /** The decks: a desktop and a phone, both stock. */
+  decks: String.raw` ┌──────┐ ┌──┐
+ │      │ │  │
+ │      │ │  │
+ └──────┘ └<b>▪</b>─┘
+ ▀▀▀▀▀▀▀▀`,
+
+  /** More than one hull: the fleet. */
+  fleet: String.raw`<b>  /\    /\    /\</b>
+<b> /  \  /  \  /  \</b>
+~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~`,
+};
+
+interface Props {
+  name: keyof typeof MARKS;
+  /** Extra class, e.g. the hero's larger size. */
+  class?: string;
+}
+
+const { name, class: className = "" } = Astro.props;
+const art = MARKS[name];
+
+if (!art) throw new Error(`AsciiMark: no mark named "${name}"`);
+---
+
+<pre class:list={["ascii-mark", className]} aria-hidden="true" set:html={art} />

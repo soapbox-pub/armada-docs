@@ -1,10 +1,9 @@
 /*
- * The "feature page" kit: a hero, a thesis, sections led by big floating emoji,
+ * The "feature page" kit: a hero, a thesis, sections led by an ASCII mark,
  * cards, callouts and a closing CTA.
  *
  * The layout is ported from Ditto's docs (`about.ditto.pub/self-hosting`) —
- * its proportions, its rhythm, and its float animations — retinted to Armada's
- * tokens. What makes that page work is that every section is announced by a
+ * its proportions and its rhythm — redrawn in Armada's own marks and tokens. What makes that page work is that every section is announced by a
  * shape you can find without reading, and that each one is a caption rather
  * than an essay.
  *
@@ -17,58 +16,14 @@
  * unlayered, so it wins outright and nothing here needs `!important`.
  */
 
-/* ── The float ───────────────────────────────────────────────────────────
-   Three drifts at different periods and amplitudes, so a page full of emoji
-   never looks like one animation applied N times. Transform only, so they stay
-   on the compositor and never lay out. */
-
-@keyframes armada-float-slow {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  25% {
-    transform: translate(12px, -18px) rotate(5deg);
-  }
-  50% {
-    transform: translate(-8px, -30px) rotate(-3deg);
-  }
-  75% {
-    transform: translate(15px, -12px) rotate(4deg);
-  }
-}
-
-@keyframes armada-float-med {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  33% {
-    transform: translate(-15px, -22px) rotate(-6deg);
-  }
-  66% {
-    transform: translate(10px, -35px) rotate(4deg);
-  }
-}
-
-@keyframes armada-float-fast {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0deg) scale(1);
-  }
-  50% {
-    transform: translate(8px, -20px) rotate(8deg) scale(1.05);
-  }
-}
-
 /*
  * No anchor icons on the kit's headings.
  *
  * Starlight reserves end-of-line space for the icon with `padding-inline-end`
- * on the heading and pulls it back with a negative margin — a pairing that
- * every restyle here breaks, landing the icon on top of the last word. Ditto
- * hides them on its styled headings for the same reason. The `id` survives, so
- * the table of contents and any existing deep link still work; only the
+ * on the heading and pulls it back with a negative margin — a pairing every
+ * restyle here breaks, landing the icon on top of the last word. Ditto hides
+ * them on its styled headings for the same reason. The `id` survives, so the
+ * table of contents and any existing deep link still work; only the
  * hover-to-copy affordance goes.
  */
 .big-idea .sl-anchor-link,
@@ -78,17 +33,49 @@
   display: none;
 }
 
-/* Every emoji on the page draws from the same stack, so one machine's fallback
-   font can't make one section's mark a different size or weight than the rest. */
-.page-hero-emoji,
-.big-idea-emoji,
-.section-emoji,
-.card-emoji,
-.callout-emoji,
-.page-cta-emoji {
-  font-family: var(--font-emoji);
-  font-style: normal;
+/* ── The marks ──────────────────────────────────────────────────────────
+   ASCII drawings, not emoji: the app draws its own ocean in a monospace grid
+   and its crest is a rose sail over a cyan wake, so the page's furniture comes
+   from the product rather than from the emoji table.
+
+   Deliberately still. Ditto's marks drift on three float animations, which is
+   right for that page and wrong here — a terminal does not bob, and eight
+   things wandering around a how-to compete with the how-to. */
+
+.ascii-mark {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  overflow: visible;
+  color: hsl(var(--accent2));
+  font-family: var(--font-mono);
+  /* The drawings are aligned character by character, so the cell box has to be
+     exactly square-ish and unpadded: any line-height above 1 opens gaps between
+     the rows of a picture. */
   line-height: 1;
+  white-space: pre;
+  /* A drawing carries its meaning in its shape; letter-spacing would shear it. */
+  letter-spacing: 0;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* The rose blade and the gilt-cream of the body text. `<b>`/`<i>` are the
+   drawings' own markup — see `AsciiMark.astro` — so the weight and slant they
+   would otherwise bring have to be unset. */
+.ascii-mark b,
+.ascii-mark i {
+  font-weight: inherit;
+  font-style: inherit;
+}
+
+.ascii-mark b {
+  color: hsl(var(--primary));
+}
+
+.ascii-mark i {
+  color: hsl(var(--foreground));
 }
 
 /* ── The hero ────────────────────────────────────────────────────────────
@@ -113,11 +100,10 @@
   justify-content: center;
 }
 
-/* The mark: the largest thing on the page, drifting. */
-.page-hero-emoji {
-  display: block;
-  font-size: clamp(4.5rem, 12vw, 6rem);
-  animation: armada-float-slow 7s ease-in-out infinite;
+/* The mark: the crest, at the largest size the drawing holds together at. */
+.hero-mark {
+  font-size: clamp(0.875rem, 2.4vw, 1.25rem);
+  text-align: center;
 }
 
 /*
@@ -178,10 +164,9 @@
   margin-block: 0 2.5rem;
 }
 
-.big-idea-emoji {
+.big-idea-mark {
   flex-shrink: 0;
-  font-size: clamp(3.5rem, 9vw, 5rem);
-  animation: armada-float-med 6s ease-in-out infinite;
+  font-size: clamp(0.8125rem, 2vw, 1.0625rem);
 }
 
 .big-idea-text > :first-child {
@@ -216,30 +201,51 @@
 }
 
 /* ── Sections ────────────────────────────────────────────────────────────
-   A rule, then the emoji with the heading beside it, then the body under both.
+   A rule, then the mark with the heading beside it, then the body under both.
 
    A grid rather than a flex row because the heading is markdown in a slot — it
-   arrives as a SIBLING of the emoji, not wrapped with it, so there is nothing
+   arrives as a SIBLING of the mark, not wrapped with it, so there is nothing
    to put a row around. */
 
+/*
+ * A FIXED first column, not `auto`. The drawings are between 4 and 15
+ * characters wide, so an auto column starts every section's heading at a
+ * different x — which reads as sloppiness rather than as variety. A fixed
+ * gutter puts every heading on one line down the page, the way a column of
+ * same-size emoji does.
+ */
 .page-section {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: 7rem minmax(0, 1fr);
   column-gap: 1rem;
   align-items: center;
   padding-block: 2.5rem;
   border-top: 1px solid hsl(var(--chrome-divider));
 }
 
+@media (max-width: 30rem) {
+  .page-section {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    column-gap: 0.75rem;
+  }
+}
+
 .page-section > * {
   grid-column: 1 / -1;
 }
 
-.section-emoji {
+.section-mark {
   grid-column: 1;
   grid-row: 1;
-  font-size: 3rem;
-  animation: armada-float-fast 6s ease-in-out infinite;
+  justify-self: center;
+  /* Sized so the widest drawing (15 characters) still fits the gutter above. */
+  font-size: 0.75rem;
+}
+
+@media (max-width: 30rem) {
+  .section-mark {
+    font-size: 0.5rem;
+  }
 }
 
 /*
@@ -250,8 +256,8 @@
  * Resizing only the `h2` leaves those two measured against different font
  * sizes, and the icon lands on top of the last word.
  */
-.page-section > .section-emoji + .sl-heading-wrapper,
-.page-section > .section-emoji + :is(h2, h3) {
+.page-section > .section-mark + .sl-heading-wrapper,
+.page-section > .section-mark + :is(h2, h3) {
   grid-column: 2;
   grid-row: 1;
   margin-top: 0;
@@ -263,16 +269,16 @@
 }
 
 /* Starlight draws a rule above every h2, which here would cut between the
-   emoji and its own heading — the section already has one above the row. */
-.page-section > .section-emoji + .sl-heading-wrapper :is(h2, h3) {
+   mark and its own heading — the section already has one above the row. */
+.page-section > .section-mark + .sl-heading-wrapper :is(h2, h3) {
   margin-top: 0;
   border-top: 0;
   padding-top: 0;
   font-size: inherit;
 }
 
-/* The body clears the emoji row rather than tucking in beside the heading. */
-.page-section > .section-emoji ~ *:not(.sl-heading-wrapper):not(:is(h2, h3)) {
+/* The body clears the mark row rather than tucking in beside the heading. */
+.page-section > .section-mark ~ *:not(.sl-heading-wrapper):not(:is(h2, h3)) {
   grid-row: auto;
 }
 
@@ -317,11 +323,6 @@
 a.card {
   color: inherit;
   text-decoration: none;
-}
-
-.card-emoji {
-  margin-bottom: 0.75rem;
-  font-size: 2.5rem;
 }
 
 /* A card title is a label on a surface, not a place anyone deep-links to. */
@@ -373,9 +374,13 @@ a.card {
   background: hsl(var(--accent2) / 0.08);
 }
 
-.callout-emoji {
+.callout-mark {
   flex-shrink: 0;
-  font-size: 2rem;
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: hsl(var(--accent2));
 }
 
 .callout-body > :first-child {
@@ -413,11 +418,10 @@ a.card {
   text-align: center;
 }
 
-.page-cta-emoji {
-  display: block;
+.page-cta-mark {
   margin-bottom: 1.25rem;
-  font-size: clamp(3.5rem, 9vw, 4.5rem);
-  animation: armada-float-fast 5s ease-in-out infinite;
+  font-size: clamp(0.75rem, 1.8vw, 1rem);
+  text-align: center;
 }
 
 .page-cta .sl-anchor-link {
@@ -472,6 +476,3 @@ a.card {
   animation: armada-caret 1s step-end infinite;
 }
 
-/* The global reduced-motion block in `theme.css` already collapses every
-   animation here; the emoji rest at their untransformed position, which is
-   where they are drawn. */

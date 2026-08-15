@@ -1,6 +1,9 @@
 ---
 /**
- * One card in a {@link Cards} grid: an emoji, a title, and a couple of lines.
+ * One card in a {@link Cards} grid: a title and a couple of lines.
+ *
+ * No mark of its own. The section above already carries one, and a second
+ * drawing inside every card turned the grid into a wall of texture.
  *
  * Renders as an `<a>` when given an `href`, so a card that points somewhere is
  * clickable across its whole surface rather than only on a link buried in its
@@ -8,15 +11,13 @@
  */
 
 interface Props {
-  emoji?: string;
   href?: string;
 }
 
-const { emoji, href } = Astro.props;
+const { href } = Astro.props;
 const Tag = href ? "a" : "div";
 ---
 
 <Tag class="card" href={href} rel={href?.startsWith("http") ? "noreferrer" : undefined}>
-  {emoji && <span class="card-emoji" aria-hidden="true">{emoji}</span>}
   <slot />
 </Tag>
