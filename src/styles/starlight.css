@@ -1,0 +1,126 @@
+/*
+ * Starlight, retinted to Armada.
+ *
+ * Starlight draws its whole UI from a fixed set of `--sl-*` variables, so
+ * theming it is a mapping exercise rather than a pile of overrides: point each
+ * one at the corresponding Armada token from `theme.css` and the sidebar, nav,
+ * search, tables, admonitions and code frames all follow.
+ *
+ * Two rules worth keeping to when editing this file:
+ *
+ *   1. `--sl-color-gray-*` runs light-to-dark IN THE CURRENT THEME, not in
+ *      absolute lightness — gray-1 is the brightest text on dark and the
+ *      darkest on light. Starlight uses the high numbers as SURFACES, so they
+ *      must stay opaque; a translucent value there shows the page background
+ *      through dropdowns and mobile menus.
+ *   2. Only remap. Resist restyling Starlight's components directly: an
+ *      upgrade rewrites their markup, and a selector written against it is a
+ *      silent regression rather than a build failure.
+ */
+
+:root,
+:root[data-theme="dark"] {
+  /* Text and surfaces, brightest to deepest. */
+  --sl-color-white: hsl(var(--foreground));
+  --sl-color-gray-1: hsl(var(--foreground));
+  --sl-color-gray-2: hsl(42 30% 78%);
+  --sl-color-gray-3: hsl(var(--muted-foreground));
+  --sl-color-gray-4: hsl(260 12% 42%);
+  --sl-color-gray-5: hsl(var(--secondary));
+  --sl-color-gray-6: hsl(260 22% 13%);
+  --sl-color-gray-7: hsl(var(--card));
+  --sl-color-black: hsl(var(--background));
+
+  /* The rose blade. `accent-high` is what links and active nav are drawn in,
+     so it has to clear contrast on the violet-black sea — the primary itself
+     is a fill color and reads muddy as body-sized text. */
+  --sl-color-accent-low: hsl(330 45% 20%);
+  --sl-color-accent: hsl(var(--primary));
+  --sl-color-accent-high: hsl(330 90% 80%);
+
+  --sl-color-bg: hsl(var(--background));
+  --sl-color-bg-nav: hsl(var(--chrome));
+  --sl-color-bg-sidebar: hsl(var(--chrome));
+  --sl-color-bg-inline-code: hsl(var(--secondary));
+  --sl-color-bg-accent: hsl(var(--primary));
+
+  --sl-color-hairline: hsl(var(--chrome-divider));
+  --sl-color-hairline-light: hsl(var(--chrome-divider));
+  --sl-color-hairline-shade: hsl(var(--chrome-deep));
+}
+
+:root[data-theme="light"] {
+  --sl-color-white: hsl(var(--foreground));
+  --sl-color-gray-1: hsl(var(--foreground));
+  --sl-color-gray-2: hsl(260 25% 26%);
+  --sl-color-gray-3: hsl(var(--muted-foreground));
+  --sl-color-gray-4: hsl(260 18% 62%);
+  --sl-color-gray-5: hsl(260 30% 88%);
+  --sl-color-gray-6: hsl(var(--secondary));
+  --sl-color-gray-7: hsl(260 30% 95%);
+  --sl-color-black: hsl(var(--background));
+
+  --sl-color-accent-low: hsl(330 60% 90%);
+  --sl-color-accent: hsl(var(--primary));
+  --sl-color-accent-high: hsl(330 80% 36%);
+
+  --sl-color-bg: hsl(var(--background));
+  --sl-color-bg-nav: hsl(var(--chrome));
+  --sl-color-bg-sidebar: hsl(var(--chrome));
+  --sl-color-bg-inline-code: hsl(var(--secondary));
+  --sl-color-bg-accent: hsl(var(--primary));
+
+  --sl-color-hairline: hsl(var(--chrome-divider));
+  --sl-color-hairline-light: hsl(var(--chrome-divider));
+  --sl-color-hairline-shade: hsl(var(--chrome-divider));
+}
+
+:root {
+  --sl-font: var(--font-sans);
+  --sl-font-mono: var(--font-mono);
+
+  /*
+   * The semantic colors behind asides, badges and the like.
+   *
+   * Starlight derives each one's three shades from a HUE, so overriding the
+   * five hues retints the whole set and leaves its lightness/saturation math —
+   * which is what keeps the light and dark variants legible — alone. Overriding
+   * the fifteen `--sl-color-*` triples instead would work today and break
+   * quietly the first time upstream adjusts those curves.
+   *
+   * The mapping is to Armada's own tokens: `note` becomes the phosphor-cyan
+   * wake, `tip` the success green, `caution` the gilt of the body text, `danger`
+   * the destructive red, and `purple` (badges) the rose blade. A default-blue
+   * note on this violet-black palette was the one thing on a docs page that
+   * looked like it came from another site.
+   */
+  --sl-hue-blue: 180;
+  --sl-hue-green: 142;
+  --sl-hue-orange: 42;
+  --sl-hue-red: 0;
+  --sl-hue-purple: 330;
+}
+
+/*
+ * The hull. Armada's chrome is near-sharp (`--radius-chrome`, 3px) while
+ * content surfaces stay soft — the tension between a framed hull and round
+ * content is the app's posture, and a docs site with pill-shaped chrome
+ * reads as a different product.
+ */
+.site-title {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: lowercase;
+}
+
+/*
+ * Page titles in mono, like every heading on the landing page and in the app's
+ * own surfaces. Deliberately h1 only: the body of a docs page is prose to be
+ * read at length, and monospace subheads all the way down costs more in
+ * legibility than the brand echo is worth.
+ */
+.content-panel h1#_top {
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+}

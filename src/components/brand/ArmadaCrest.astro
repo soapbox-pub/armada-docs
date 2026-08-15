@@ -1,0 +1,150 @@
+---
+/**
+ * The Armada mark, animated — a port of `ArmadaCrest` from the app.
+ *
+ * The path strings are shared VERBATIM with `public/logo.svg` here, and with
+ * `public/logo.svg`, `index.html`'s boot splash, `src/components/brand/ArmadaCrest.tsx`
+ * and `android/.../drawable/crest_vector.xml` in the armada repo. Keep them in
+ * sync; they are the same geometry drawn by five different renderers.
+ *
+ * The motion is a one-shot *draw*, ~1.6s to settle:
+ *
+ * | t (s)       | what                                                        |
+ * |-------------|-------------------------------------------------------------|
+ * | 0.00 – 0.66 | the three wave lines sweep open from the centerline          |
+ * | 0.08 – 0.86 | a hairline stroke traces the sail's outline, then dissolves  |
+ * | 0.48 – 0.90 | the sail's fill floods in behind the trace                   |
+ * | 0.86 – 1.18 | the waterline caret inks in                                  |
+ * | 0.72 – 1.62 | a single halo sheen crosses the sail and fades out           |
+ *
+ * ...after which the mark rests as the static logo, with only the wake still
+ * scanning. Each shape's resting state is its FINAL state and the keyframes
+ * supply only the entrance, so the global `prefers-reduced-motion` rule in
+ * `theme.css` lands on the finished mark rather than a half-drawn one.
+ */
+
+/** The rose sail / advancing A, with its open hull counter. */
+const SAIL =
+  "M64 4.225l-39.97 88.5h17.13l2.31-5.2 2.76-6.22-2.22-1.43-1.42-12.84h9.99l4.89-11.01L64 41.335l11.42 25.7h9.99l-1.43 12.84-2.22 1.43 2.77 6.22 2.31 5.2h17.13z";
+/** The reflection caret under the sail (the waterline). */
+const CARET =
+  "M76.84 79.165c-.15 0-.31-.05-.44-.15l-12.41-9.65-12.41 9.65c-.31.24-.76.19-1-.13a.706.706 0 0 1 .13-1l12.85-9.99c.26-.2.62-.2.88 0l12.85 9.99a.715.715 0 0 1-.43 1.28z";
+/** Three tapering wave lines. Each sweeps open on its own staggered beat. */
+const WAVES = [
+  "M95.4 104.865H32.59c-1.18 0-2.14-.96-2.14-2.14s.96-2.14 2.14-2.14H95.4c1.18 0 2.14.96 2.14 2.14s-.96 2.14-2.14 2.14z",
+  "M83.98 115.565H44.01a1.43 1.43 0 1 1 0-2.86h39.97a1.43 1.43 0 1 1 0 2.86z",
+  "M73.99 123.775H54.01a1.071 1.071 0 0 1 0-2.14h19.98a1.071 1.071 0 0 1 0 2.14z",
+];
+
+interface Props {
+  /** Rendered size in px. The viewBox is fixed at 128. */
+  size?: number;
+  class?: string;
+}
+
+const { size = 132, class: className = "" } = Astro.props;
+---
+
+<svg
+  width={size}
+  height={size}
+  viewBox="0 0 128 128"
+  fill="none"
+  role="img"
+  aria-label="Armada logo"
+  class:list={["crest", className]}
+>
+  {/*
+    The wake. Two motions on two elements because they would otherwise fight
+    over one `transform`: the entrance sweep on the path, the idle scan on a
+    wrapper <g> that multiplies into it. Both are scaleX about x=64 — the
+    mark's centerline, and every line's own midpoint, so they grow and shrink
+    symmetrically.
+  */}
+  <g fill="hsl(var(--accent2))">
+    {
+      WAVES.map((d, i) => (
+        <g class="wake" style={`animation-delay:${0.9 + i * 0.6}s`}>
+          <path class="sweep" d={d} style={`animation-delay:${i * 0.07}s`} />
+        </g>
+      ))
+    }
+  </g>
+
+  {/*
+    The sail, in three stacked copies of one path:
+
+    1. the SHEEN — a copy carrying a static drop-shadow whose `opacity` is what
+       animates. Fading a filter that is rasterized once is a compositor-only
+       change; animating the filter itself re-runs the blur every frame. Only
+       the halo shows, since the solid fill sits directly on top.
+    2. the FILL — the shape itself, and the resting state of the whole group.
+    3. the TRACE — stroke-only, `pathLength="1"` so the dash pattern is in
+       normalized units regardless of the shape's real perimeter. It rests at
+       `opacity: 0`; the keyframes reveal it, run the dash offset 1 → 0, then
+       dissolve it once the fill has arrived.
+  */}
+  <path class="sheen" d={SAIL} />
+  <path class="fill" d={SAIL} />
+  <path class="trace" d={SAIL} pathLength="1" />
+
+  <path class="caret" d={CARET} />
+</svg>
+
+<style>
+  .crest {
+    position: relative;
+    filter: drop-shadow(0 8px 24px hsl(var(--primary) / 0.25));
+  }
+
+  .wake {
+    transform-origin: 64px 0;
+    /* No fill mode: before the delay elapses this contributes nothing, so the
+       sweep below owns the transform for the whole entrance. */
+    animation: armada-wake 6s ease-in-out infinite;
+  }
+
+  .sweep {
+    transform-origin: 64px 0;
+    /* expo-out, no bounce */
+    animation: armada-sweep 0.52s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .sheen {
+    fill: hsl(var(--primary));
+    opacity: 0;
+    filter: drop-shadow(0 0 10px hsl(var(--primary) / 0.6));
+    animation: armada-sheen 0.9s ease-in-out 0.64s both;
+  }
+
+  .fill {
+    fill: hsl(var(--primary));
+    animation: armada-ink 0.42s ease-out 0.4s both;
+  }
+
+  .trace {
+    fill: none;
+    stroke: hsl(var(--primary));
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1;
+    opacity: 0;
+    /* the pen: accelerate, then land */
+    animation: armada-trace 0.78s cubic-bezier(0.65, 0, 0.35, 1) 0.08s both;
+  }
+
+  .caret {
+    fill: hsl(var(--primary));
+    fill-opacity: 0.85;
+    animation: armada-ink 0.32s ease-out 0.86s both;
+  }
+
+  /*
+   * No reduced-motion block here, deliberately. The global rule in `theme.css`
+   * collapses every duration to 0.01ms and caps iterations at 1, and because
+   * each of these carries `both`, the animation still resolves — landing on
+   * its FINAL keyframe. That is the settled mark: the wake at full width, the
+   * fill and caret inked, the trace and sheen back at opacity 0.
+   */
+</style>

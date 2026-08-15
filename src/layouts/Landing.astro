@@ -1,0 +1,302 @@
+---
+/**
+ * The layout for pages that are NOT documentation — currently just the
+ * homepage.
+ *
+ * Starlight owns everything under the docs collection and emits its own head,
+ * canonical link and social tags. Anything in `src/pages/` is outside that, so
+ * this layout is where the equivalent lives: without it a hand-written page
+ * ships with no description, no canonical and no social card, which on the
+ * highest-value URL on the site is the one place that actually costs traffic.
+ *
+ * It deliberately does NOT reuse Starlight's shell. The homepage is a
+ * full-bleed hero over a live background; the docs chrome would frame it in a
+ * sidebar and a content column and lose the whole effect.
+ */
+import "../styles/theme.css";
+
+import { OG_IMAGE, SITE_DESCRIPTION, SITE_TITLE, SITE_URL, LINKS } from "../consts";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Absolute URL. Defaults to the site card. */
+  image?: string;
+  /** Extra JSON-LD, already stringified by the caller. */
+  structuredData?: Record<string, unknown>;
+}
+
+const {
+  title,
+  description = SITE_DESCRIPTION,
+  image = OG_IMAGE,
+  structuredData,
+} = Astro.props;
+
+/**
+ * `Astro.site` comes from `site` in the config, so this resolves to the real
+ * deployed origin rather than to localhost, in every environment.
+ */
+const canonical = new URL(Astro.url.pathname, Astro.site ?? SITE_URL).href;
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="generator" content={Astro.generator} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="256x256" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta name="theme-color" content="#100b15" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f7f5fb" media="(prefers-color-scheme: light)" />
+
+    {/*
+      Open Graph. `og:image` MUST be absolute — most crawlers (X, Discord,
+      Slack, iMessage) do not resolve relative ones, and the card renders with
+      no image at all.
+    */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_TITLE} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={image} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Armada" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image} />
+
+    {/* `is:inline` on the tag below is explicit because this is data, not code:
+        without it Astro treats a typed script as a module to bundle, and the
+        JSON-LD would leave the head as a hashed asset no crawler reads. */}
+    {
+      structuredData && (
+        <script
+          is:inline
+          type="application/ld+json"
+          set:html={JSON.stringify(structuredData)}
+        />
+      )
+    }
+
+    {/*
+      Anti-flash theme bootstrap, mirroring the app's own `public/theme.js` and
+      reading the SAME key Starlight's theme select writes. Inline and
+      synchronous on purpose: a module script is deferred, which is a frame of
+      the wrong background on every load. Armada is a dark product, so an
+      unset preference resolves dark — the light theme is opt-in, not the
+      system default.
+    */}
+    <script is:inline>
+      (function () {
+        try {
+          var pref = localStorage.getItem("starlight-theme");
+          if (pref !== "light" && pref !== "dark") {
+            pref = window.matchMedia("(prefers-color-scheme: light)").matches
+              ? "light"
+              : "dark";
+          }
+          document.documentElement.dataset.theme = pref;
+        } catch (e) {
+          /* Private mode with storage disabled: the dark default in the markup
+             already stands, so there is nothing to recover from. */
+        }
+      })();
+    </script>
+  </head>
+
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="topbar">
+      <a class="brand" href="/">
+        <img src="/logo.svg" width="28" height="28" alt="" />
+        <span>armada <b>docs</b></span>
+      </a>
+      <nav aria-label="Primary">
+        <a href="/how-it-works/">How it works</a>
+        <a href="/self-hosting/">Self-hosting</a>
+        <a href={LINKS.app} rel="noreferrer">Get Armada</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="footer">
+      <p class="sign-off">
+        <span class="prompt">$</span> sail the seas<span class="caret" aria-hidden="true">_</span>
+      </p>
+      <nav aria-label="Footer">
+        <a href="/how-it-works/">How it works</a>
+        <a href="/self-hosting/">Self-hosting</a>
+        <a href={LINKS.app} rel="noreferrer">Armada</a>
+        <a href={LINKS.downloads} rel="noreferrer">Downloads</a>
+        <a href={LINKS.repo} rel="noreferrer">Source</a>
+      </nav>
+    </footer>
+
+    <style>
+      :global(html) {
+        scroll-behavior: smooth;
+        background-color: hsl(var(--background));
+      }
+
+      :global(body) {
+        margin: 0;
+        min-height: 100%;
+        background-color: hsl(var(--background));
+        color: hsl(var(--foreground));
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      :global(*),
+      :global(*::before),
+      :global(*::after) {
+        box-sizing: border-box;
+      }
+
+      :global(:focus-visible) {
+        outline: 2px solid hsl(var(--ring));
+        outline-offset: 2px;
+      }
+
+      .skip {
+        position: absolute;
+        left: -9999px;
+        z-index: 50;
+        padding: 0.75rem 1rem;
+        background: hsl(var(--card));
+        color: hsl(var(--foreground));
+        border-radius: var(--radius-chrome);
+      }
+      .skip:focus {
+        left: 1rem;
+        top: 1rem;
+      }
+
+      /*
+       * Absolute rather than sticky: the hero is the design, and a bar riding
+       * over the sea for the whole page would compete with it. The footer and
+       * the in-page CTAs carry navigation from there down.
+       */
+      .topbar {
+        position: absolute;
+        inset: 0 0 auto;
+        z-index: 20;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem 1.5rem;
+        padding: 1.125rem clamp(1rem, 5vw, 2.5rem);
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.625rem;
+        font-family: var(--font-mono);
+        font-size: 0.9375rem;
+        letter-spacing: -0.01em;
+        color: hsl(var(--foreground));
+        text-decoration: none;
+      }
+      .brand b {
+        font-weight: 400;
+        color: hsl(var(--muted-foreground));
+      }
+
+      .topbar nav,
+      .footer nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1.5rem;
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        letter-spacing: 0.02em;
+      }
+
+      .topbar nav a,
+      .footer nav a {
+        color: hsl(var(--muted-foreground));
+        text-decoration: none;
+        transition: color 0.15s ease;
+      }
+      .topbar nav a:hover,
+      .footer nav a:hover {
+        color: hsl(var(--foreground));
+      }
+
+      .footer {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem 2rem;
+        padding: 2rem clamp(1rem, 5vw, 2.5rem)
+          max(2rem, env(safe-area-inset-bottom, 0px));
+        border-top: 1px solid hsl(var(--chrome-divider));
+        background: hsl(var(--chrome-deep));
+      }
+
+      /* The sign-off returns to the hero's prompt: same cyan `$`, same rose
+         line, same blinking caret as the wordmark — the page ends at the
+         terminal it opened on. */
+      .sign-off {
+        margin: 0;
+        font-family: var(--font-mono);
+        font-size: 0.9375rem;
+        color: hsl(var(--primary));
+      }
+      .prompt {
+        color: hsl(var(--accent2));
+      }
+      .caret {
+        animation: armada-caret 1s step-end infinite;
+      }
+    </style>
+
+    {/*
+      Sections ease up as they enter the viewport. Driven by an
+      IntersectionObserver rather than by scroll position, so a section that is
+      never reached never animates — and anything that loses the observer (no
+      JS, an old browser) simply gets the resting state, because `[data-rise]`
+      is only made transparent once the script has confirmed it will be
+      un-hidden again.
+    */}
+    <script>
+      const rising = document.querySelectorAll<HTMLElement>("[data-rise]");
+      if (rising.length && "IntersectionObserver" in window) {
+        for (const el of rising) el.dataset.riseArmed = "";
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue;
+              (entry.target as HTMLElement).dataset.riseIn = "";
+              io.unobserve(entry.target);
+            }
+          },
+          { rootMargin: "0px 0px -12% 0px" },
+        );
+        for (const el of rising) io.observe(el);
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,142 @@
+---
+/**
+ * The Armada wordmark + terminal tagline — a port of `BrandMark` from the app,
+ * which in turn echoes the OG card (`public/og.svg`): a lowercase monospace
+ * wordmark in gilt-cream, and a cyan `$` prompt leading a rose-magenta tagline
+ * that ends in a blinking caret. Flat, no glow.
+ *
+ * `suffix` is the one addition the docs site needs — a muted word set beside
+ * the wordmark, so the mark reads as a section of Armada rather than as a
+ * second product with its own name.
+ *
+ * `lines` adds extra muted `$` follow-up lines below the tagline; the blinking
+ * caret moves to the last line, exactly as it does in the app.
+ */
+
+interface Props {
+  align?: "center" | "left";
+  /** The `$` prompt line. Keep it short — it sits on one line at every width. */
+  tagline?: string;
+  /** Muted follow-up `$` lines. */
+  lines?: string[];
+  /** A muted word beside the wordmark, e.g. "docs". */
+  suffix?: string;
+  /** Renders the wordmark at heading scale. Set `false` inside real headings. */
+  large?: boolean;
+  class?: string;
+}
+
+const {
+  align = "center",
+  tagline = "a sovereign harbor on the open web",
+  lines = [],
+  suffix,
+  large = true,
+  class: className = "",
+} = Astro.props;
+---
+
+<div class:list={["mark", align, { large }, className]}>
+  <p class="wordmark">
+    <span class="name">armada</span>
+    {suffix && <span class="suffix">{suffix}</span>}
+  </p>
+
+  <p class="tagline">
+    <span class="prompt">$ </span>{tagline}
+    {lines.length === 0 && <span class="caret" aria-hidden="true">_</span>}
+  </p>
+
+  {
+    lines.map((line, i) => (
+      <p class="line">
+        <span class="prompt">$ </span>
+        {line}
+        {i === lines.length - 1 && (
+          <span class="caret rose" aria-hidden="true">
+            _
+          </span>
+        )}
+      </p>
+    ))
+  }
+</div>
+
+<style>
+  .mark {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    font-family: var(--font-mono);
+  }
+  .mark.center {
+    align-items: center;
+    text-align: center;
+  }
+  .mark.left {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .wordmark {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin: 0;
+    line-height: 1;
+  }
+
+  .name {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    text-transform: lowercase;
+    color: hsl(var(--foreground));
+  }
+  .large .name {
+    font-size: clamp(2.75rem, 10vw, 3.75rem);
+  }
+
+  /* Set in the muted caption color rather than the wordmark's cream: it names
+     which part of Armada this is, and shouldn't compete with the name itself. */
+  .suffix {
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: lowercase;
+    color: hsl(var(--muted-foreground));
+  }
+  .large .suffix {
+    font-size: clamp(1rem, 3.5vw, 1.375rem);
+  }
+
+  .tagline,
+  .line {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    text-wrap: balance;
+  }
+  .large .tagline,
+  .large .line {
+    font-size: clamp(0.9375rem, 2.6vw, 1.125rem);
+  }
+
+  .tagline {
+    color: hsl(var(--primary));
+  }
+  .line {
+    color: hsl(var(--foreground) / 0.55);
+  }
+
+  .prompt {
+    color: hsl(var(--accent2));
+  }
+
+  .caret {
+    animation: armada-caret 1s step-end infinite;
+  }
+  .caret.rose {
+    color: hsl(var(--primary));
+  }
+</style>

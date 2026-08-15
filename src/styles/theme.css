@@ -1,0 +1,225 @@
+/*
+ * Armada's design tokens, lifted verbatim from the app.
+ *
+ * The client derives every token from three core colors at runtime
+ * (`src/themes.ts` + `public/theme.js` in the armada repo — `deriveTokensFromCore`).
+ * A docs site has no theme builder and no reason to ship that machinery, so the
+ * derivation was run once against the two builtin themes and its output pasted
+ * here. The values are exact, not eyeballed: if the app's core colors ever
+ * change, re-run the derivation rather than nudging these by hand.
+ *
+ * Format matches the app: bare HSL channels, wrapped at the use site with
+ * `hsl(var(--token))`, so any token can take an alpha via `hsl(var(--x) / 0.5)`.
+ *
+ * `[data-theme]` is Starlight's switch, set on <html> by its own inline script.
+ * Dark is the default and the unqualified `:root` block, because Armada is a
+ * dark product and the landing page is designed against the violet-black sea.
+ */
+
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --background: 260 22% 9%;
+  --foreground: 42 38% 90%;
+  --card: 260 22% 11%;
+  --card-foreground: 42 38% 90%;
+  --popover: 260 22% 11%;
+  --popover-foreground: 42 38% 90%;
+  --primary: 330 90% 62%;
+  --primary-foreground: 222.2 84% 4.9%;
+  --secondary: 260 22% 17%;
+  --secondary-foreground: 42 38% 90%;
+  --muted: 260 22% 17%;
+  --muted-foreground: 42 26.6% 60%;
+  --accent: 260 22% 17%;
+  --accent-foreground: 42 38% 90%;
+  --accent2: 180 90% 55%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 95%;
+  --success: 142 60% 35%;
+  --success-foreground: 138 60% 94%;
+  --border: 330 36% 30%;
+  --input: 330 36% 30%;
+  --ring: 330 90% 62%;
+  --chrome: 257.1 21.2% 6.5%;
+  --chrome-deep: 260 21.4% 5.5%;
+  --chrome-divider: 253.3 9.7% 18.2%;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --background: 260 30% 97%;
+  --foreground: 260 30% 14%;
+  --card: 260 30% 97%;
+  --card-foreground: 260 30% 14%;
+  --popover: 260 30% 97%;
+  --popover-foreground: 260 30% 14%;
+  --primary: 330 80% 52%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 260 30% 93%;
+  --secondary-foreground: 260 30% 14%;
+  --muted: 260 30% 93%;
+  --muted-foreground: 260 21% 49%;
+  --accent: 260 30% 93%;
+  --accent-foreground: 260 30% 14%;
+  --accent2: 190 85% 40%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --success: 142 72% 29%;
+  --success-foreground: 138 60% 94%;
+  --border: 330 40% 82%;
+  --input: 330 40% 82%;
+  --ring: 330 80% 52%;
+  --chrome: 260 38% 91%;
+  --chrome-deep: 260 38% 88%;
+  --chrome-divider: 260 38% 84%;
+}
+
+:root {
+  /*
+   * The app's two-radii system. Shape carries meaning: soft for human/content
+   * surfaces ("the people"), near-sharp for structural chrome ("the hull").
+   */
+  --radius: 0.75rem;
+  --radius-chrome: 0.1875rem;
+
+  /*
+   * The app ships no webfont — it resolves to the system UI stack, and the
+   * monospace stack is Tailwind's default. Matching that here keeps the two
+   * surfaces identical AND costs the docs site zero font requests, which is
+   * the single largest render-blocking win available on a content site.
+   */
+  --font-sans: "Inter Variable", Inter, system-ui, -apple-system, "Segoe UI",
+    Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+
+/* ── Brand keyframes ──────────────────────────────────────────────────────
+ *
+ * Ported from `ArmadaCrestKeyframes` and `LandingKeyframes` in the app, where
+ * they are injected per screen because React mounts and unmounts the surfaces
+ * that use them. A static site has one stylesheet, so they live here once.
+ *
+ * Every animated element's STATIC state is its final resting state, with the
+ * keyframes supplying only the entrance. That is what lets the reduced-motion
+ * block below kill them wholesale and still land on the finished mark rather
+ * than a half-drawn one.
+ */
+
+/* A hairline pen traces an outline, then dissolves as the fill lands.
+   `pathLength="1"` on the path makes the dash pattern normalized. */
+@keyframes armada-trace {
+  0% {
+    opacity: 1;
+    stroke-dashoffset: 1;
+  }
+  76% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* The fill floods in behind the trace. */
+@keyframes armada-ink {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* A single halo pass as the shape lands. Compositor-only: the drop-shadow is
+   static and rasterized once, and only `opacity` animates. An animated
+   `filter` re-runs the blur and repaints the subtree every frame. */
+@keyframes armada-sheen {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  45% {
+    opacity: 1;
+  }
+}
+
+/* A wave line sweeping open from the mark's centerline. Starts at a sliver
+   rather than 0: a zero-scale matrix is degenerate and some renderers drop the
+   paint outright. */
+@keyframes armada-sweep {
+  from {
+    opacity: 0;
+    transform: scaleX(0.15);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* The idle wake: each line scans slowly in and out. Begins and ends at the
+   settled width so it joins the entrance seamlessly. */
+@keyframes armada-wake {
+  0%,
+  100% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(0.78);
+  }
+}
+
+/* The terminal caret. */
+@keyframes armada-caret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* The scroll cue riding the swell. Transform only. */
+@keyframes armada-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(0.4rem);
+    opacity: 1;
+  }
+}
+
+/* Sections easing up as they enter the viewport, driven by the IntersectionObserver
+   in `Landing.astro` rather than by scroll position, so nothing runs off-screen. */
+@keyframes armada-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
