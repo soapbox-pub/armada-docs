@@ -1,6 +1,6 @@
 ---
 /**
- * The closing block of a feature page: a heading, a last paragraph, and the
+ * The closing block: a giant floating emoji, a heading, a last line, and the
  * actions the page has been building toward.
  *
  * The sign-off underneath is the landing page's prompt — same cyan `$`, same
@@ -8,14 +8,16 @@
  */
 
 interface Props {
+  emoji: string;
   /** The `$` line. Omit for no sign-off. */
   signOff?: string;
 }
 
-const { signOff } = Astro.props;
+const { emoji, signOff } = Astro.props;
 ---
 
 <section class="page-cta">
+  <span class="page-cta-emoji" aria-hidden="true">{emoji}</span>
   <slot />
   {
     signOff && (

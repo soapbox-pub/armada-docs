@@ -1,14 +1,29 @@
 ---
 title: Self-hosting Armada
-description: Armada communities already run without a host. This is how to own the rest — the app you load, the relays your messages cross, and the server your calls go through.
+description: Run Armada on your own domain. It is a static site — build it, serve it, point it at whichever relays you like. Optionally run the relay and the voice server too.
 sidebar:
   label: Overview
   order: 1
-# h2 only. The h3s on this page are card titles — "Visual", "Defaults",
-# "Add voice" — which are labels on a surface rather than sections anyone
-# navigates to, and listing them buries the seven headings that are.
+# h2 only. The h3s here are card titles, which are labels on a surface rather
+# than places anyone navigates to.
 tableOfContents:
   maxHeadingLevel: 2
+hero:
+  # The mark is an emoji rather than the crest: it is the page's own subject
+  # ("a sovereign harbor"), it floats, and it matches the emoji leading every
+  # section below. `image.html` is the only hook Starlight's hero gives us.
+  image:
+    html: '<span class="page-hero-emoji">⚓</span>'
+  tagline: Armada communities already run without a host. This is how to own the rest — the app, the relays, and the calls.
+  actions:
+    - text: Run it
+      link: "#run-it"
+      icon: right-arrow
+      variant: primary
+    - text: The full walkthrough
+      link: https://soapbox.pub/blog/how-to-self-host-armada
+      icon: external
+      variant: minimal
 ---
 
 import BigIdea from "../../../components/docs/BigIdea.astro";
@@ -16,258 +31,129 @@ import Callout from "../../../components/docs/Callout.astro";
 import Card from "../../../components/docs/Card.astro";
 import Cards from "../../../components/docs/Cards.astro";
 import Cta from "../../../components/docs/Cta.astro";
-import Lede from "../../../components/docs/Lede.astro";
 import Section from "../../../components/docs/Section.astro";
 
-<Lede>
+<BigIdea emoji="🌊">
 
-Armada communities already run without a host. This is about owning the rest:
-**the app you load, the relays your messages cross, and the server your calls go
-through.**
+## Nothing to host
 
-</Lede>
-
-<BigIdea>
-
-## There is no community server to take over
-
-No machine owns your membership list, your channels, or your history. A
-community travels as ordinary Nostr events, gift-wrapped so that the relays
-carrying it are storing sealed envelopes — they cannot read them, and neither
-can whoever runs them.
-
-So self-hosting Armada is not about privacy. That part is already done. It is
-about **availability and independence**: which machines you depend on staying
-up, and who gets to decide when they don't.
+No server owns your community. It travels as ordinary Nostr events, sealed, over
+relays that cannot read them — so self-hosting Armada means the **app** and,
+if you want them, the **pipes**. Never the community itself.
 
 </BigIdea>
 
-<Section marker="01">
+<Section emoji="🚢">
 
-## Pick your pieces
+## Run it
 
-You almost certainly should not run all of this. Armada is built on Nostr
-specifically so you don't have to — any relay will carry your community, and
-there are hundreds run by people who have never heard of it.
-
-<Cards>
-<Card cue="No work">
-
-### Host nothing
-
-Use the hosted client and add whichever relays you like. Your community still
-has no owner, and your messages stay unreadable to everyone carrying them.
-
-</Card>
-<Card cue="An afternoon">
-
-### Host the client
-
-Your domain, your build, your defaults — someone else's storage. No database, no
-backups. This is the one most communities should pick.
-
-</Card>
-<Card cue="Real weight">
-
-### Add a relay
-
-The whole road is yours. It is also a real database with real operational
-weight, and the piece you are most likely to regret.
-
-</Card>
-<Card cue="One box">
-
-### Add voice
-
-The only piece that genuinely has to be a server. The shortest install here, and
-the one you cannot skip if you want calls on your own infrastructure.
-
-</Card>
-</Cards>
-
-Spreading a community across several independent relays is better availability
-than one server you maintain alone — if one goes down it does not take the
-community with it. Run your own because you want it, or because you have a
-requirement nobody else's relay meets. Not because the default is weak.
-
-<Callout mark="?">
-
-Not sure which relays? [nostr.watch](https://nostr.watch) is the directory. Check
-that the ones you pick accept gift-wrapped events and keep them around rather
-than expiring them quickly — that varies by operator.
-
-</Callout>
-
-</Section>
-
-<Section marker="02">
-
-## Install ngit first
-
-Armada's code does not live on GitHub. It lives on Nostr, the same network the
-messages travel over, so its addresses start with `nostr://` instead of
-`https://`. Git does not understand those on its own.
-
-Install [ngit](https://ngit.dev) once and it does — from then on `git clone`
-behaves exactly the way you expect. This covers the client and the voice broker;
-the relay is a separate project and clones the ordinary way.
-
-</Section>
-
-<Section marker="03">
-
-## The web client
-
-The client is a static site. The repo ships a `Dockerfile` that builds it and
-serves it with nginx on port 80. Put your own TLS in front of it, the same way
-you would in front of anything else.
+The client is a static site, and the repo ships a `Dockerfile` that builds it and
+serves it with nginx.
 
 ```sh
 git clone nostr://soapbox.pub/relay.ngit.dev/armada
 cd armada
+docker build -t armada .
+docker run -p 8080:80 armada
 ```
 
-Settings are baked in at build time as Docker build args. The ones most
-deployments touch:
+That address is a Nostr remote, so `git clone` needs [ngit](https://ngit.dev)
+installed once. Put your own TLS in front of the container — microphones only
+work in a secure context, so voice needs a real certificate anywhere but
+`localhost`.
+
+</Section>
+
+<Section emoji="⚙️">
+
+## Configuration
+
+Settings bake in at build time, as Docker build args.
 
 | Build arg | What it does |
 | --- | --- |
 | `VITE_APP_NAME` | What the app calls itself. |
-| `VITE_APP_RELAYS` | The relays a fresh user starts with, for profiles and lists. They can change these in Settings. |
-| `VITE_SEARCH_RELAYS` | Where NIP-50 search queries go. |
-| `VITE_BROADCAST_RELAYS` | Write-only relays the profile and personal lists are also published to, so other Nostr clients can find them. |
+| `VITE_APP_RELAYS` | The relays a fresh user starts with. Editable in Settings. |
+| `VITE_SEARCH_RELAYS` | Where search queries go. |
 | `VITE_APP_BLOSSOM_SERVERS` | Default media upload servers. |
-
-The rest have sane defaults and are listed in the repo's README.
+| `VITE_CONCORD_AV_SERVERS` | Voice token brokers. |
 
 ```sh
 docker build \
   --build-arg VITE_APP_NAME="Example Chat" \
   --build-arg VITE_APP_RELAYS="wss://relay.example.com" \
-  --build-arg VITE_SEARCH_RELAYS="wss://relay.example.com" \
   -t example-chat .
 ```
 
 <Callout>
 
-**There is no build-time relay pin, on purpose.** Every build — the hosted one
-included — ships with no baked-in servers, and the user adds their own. A pin is
-a WebSocket the client dials on boot whether or not that origin speaks Nostr,
-and `ws://localhost` means nothing on a phone. Set the *defaults* above instead;
-they are a starting point the user can edit rather than a socket they can't.
+**There is no relay pin, on purpose.** These are *defaults* the user can edit,
+not sockets they are stuck with. A pinned relay is dialed on boot whether or not
+that origin speaks Nostr — and `ws://localhost` means nothing on a phone.
 
 </Callout>
 
-Use the `nginx.conf` that ships in the repo rather than writing your own. It gets
-two things right that are unpleasant to discover later. Hashed files under
-`/assets/` return a plain 404 when they are missing, instead of quietly serving
-the app's HTML in their place — which is what keeps a tab left open across a
-deploy from landing on a broken screen. And its security headers are tuned for a
-client that holds a private key in the browser: the CSP omits `unsafe-inline`
-and `unsafe-eval` to limit what an injected script could exfiltrate. If you do
-rewrite it, carry both over.
-
-One more: microphones only work in a secure context. `localhost` is fine while
-you are testing; anything else needs a real certificate.
-
 </Section>
 
-<Section marker="04">
+<Section emoji="🎨">
 
-## Make it yours
-
-Beyond the name, the look is three colors. Armada derives every theme token —
-surfaces, borders, muted text, the whole palette — from a background, a text
-color and a primary, so retinting the app is editing `builtinThemes` in
-`src/themes.ts` before you build rather than hunting through a stylesheet.
+## Branding
 
 <Cards>
-<Card cue="Identity">
+<Card emoji="🖼️">
 
-### Visual
+### Look
 
-- **Logo** — replace `public/logo.svg`
-- **Name** — `VITE_APP_NAME`
-- **Social card** — replace `public/og.png`
+- **Logo** — `public/logo.svg`
+- **Social card** — `public/og.png`
+- **Colors** — `builtinThemes` in `src/themes.ts`
 
 </Card>
-<Card cue="Infrastructure">
+<Card emoji="🌈">
 
-### Defaults
+### Three colors
 
-- **Relays** — `VITE_APP_RELAYS`, `VITE_SEARCH_RELAYS`
-- **Media servers** — `VITE_APP_BLOSSOM_SERVERS`
-- **Voice brokers** — `VITE_CONCORD_AV_SERVERS`
+A background, a text color and a primary. Every other token — surfaces, borders,
+muted text — is derived from those, so retinting is three values, not a
+stylesheet.
 
 </Card>
 </Cards>
 
-Color values are HSL components with no `hsl()` wrapper and no commas, the same
-form the app stores a custom theme in.
-
 </Section>
 
-<Section marker="05">
+<Section emoji="📡">
 
-## A relay
+## Relays
 
-There is no group server to install. A relay for Armada is just a Nostr relay,
-and it knows nothing about how your community is organised, because none of that
-reaches it in a form it could read.
+You probably do not need your own. Any Nostr relay carries an Armada community,
+and [nostr.watch](https://nostr.watch) lists hundreds run by people who have
+never heard of yours — spread across a few, one going down doesn't take the
+community with it.
 
-The one Soapbox runs is [ditto-relay](https://gitlab.com/soapbox-pub/ditto-relay):
-AGPL-3.0 like the client, written for Bun, storing events in OpenSearch.
+If you want one anyway, Soapbox runs
+[ditto-relay](https://gitlab.com/soapbox-pub/ditto-relay): AGPL-3.0, written for
+Bun, storing events in OpenSearch.
 
-Set expectations before you start. It ships no Dockerfile and no compose file,
-so you are writing the service definition yourself, and you are installing and
-running OpenSearch 2.x alongside it.
+<Callout>
 
-```sh
-git clone https://gitlab.com/soapbox-pub/ditto-relay
-cd ditto-relay
-bun install
-cp .env.example .env
-```
-
-| Key | Notes |
-| --- | --- |
-| `RELAY_URL` | Required. The public `wss://` address. It will not start without one. |
-| `NOSTR_NSEC` | Required. A key for the relay itself, in `nsec…` form — **a hex key looks like it should work and does not**. |
-| `OPENSEARCH_NODE` | Where OpenSearch is. Defaults to `http://localhost:9200`. |
-| `PORT` | Defaults to `13131`, not the `8000` one README example shows. Trust `.env.example`. |
-| `IP_HEADER` | Whatever header your proxy adds, so rate limiting counts real visitors rather than counting your proxy over and over. |
-
-Leave `AUTH_KINDS` alone. Its default makes a client identify itself before it
-can even ask for community messages, which keeps a passerby from hoovering up
-sealed envelopes they cannot open anyway.
-
-Then `bun start`, wrapped in a service definition, with nginx or Caddy in front
-for TLS.
-
-<Callout mark="?">
-
-If OpenSearch is a dealbreaker, this is the section to skip. Go back to
-[nostr.watch](https://nostr.watch) and use relays that already exist — your
-community does not care which ones.
+It ships no Dockerfile and no compose file, so you are writing the service
+definition and running an OpenSearch 2.x cluster yourself. Two settings catch
+everyone: `NOSTR_NSEC` must be the `nsec…` form, and the port is `13131`.
 
 </Callout>
 
 </Section>
 
-<Section marker="06">
+<Section emoji="🎙️">
 
-## Voice and video
+## Voice
 
-Voice is the one part that needs a real server, because audio cannot travel the
-way messages do. It is two programs.
-
-The first is [LiveKit](https://livekit.io), the ordinary open-source media
-server, run stock — no fork, no patches. The second is a small token broker in
-front of it, which exists because LiveKit has no idea what an Armada community
-is. Your client proves it holds the key to a channel, the broker checks that
-signature, and it issues a short-lived ticket good for one room. It never learns
-which community the room belongs to or who you are, and the audio is encrypted
-between the people on the call, so LiveKit forwards sound it cannot listen to.
+The one piece that has to be a real server, because audio cannot travel the way
+messages do. It is stock [LiveKit](https://livekit.io) plus a small token broker
+that checks you hold the key to a channel and issues a ticket for one room — it
+never learns which community that is, and the audio is encrypted end to end
+anyway.
 
 ```sh
 git clone nostr://chad@chadwick.site/relay.ngit.dev/armada-av
@@ -276,79 +162,42 @@ cp .env.example .env
 docker compose up -d
 ```
 
-That deployment brings up all three pieces — the broker, one LiveKit node, and
-Caddy, which fetches your certificate for you. Three settings matter; everything
-else has a working default.
-
-| Setting | What it is |
-| --- | --- |
-| `AV_DOMAIN` | The domain this box answers on, like `av.example.com`. No `https://`. |
-| `LIVEKIT_API_KEY` | Generated, below. |
-| `LIVEKIT_API_SECRET` | Same. |
-
-```sh
-docker run --rm livekit/livekit-server generate-keys
-```
-
-Point the domain at the box and open four ports: 80 and 443 for the web side,
-then UDP 7882 and TCP 7881 for the audio. Nothing else needs to be reachable.
-Then open Armada, go to Settings → Voice, and give it `https://av.example.com`.
-
-Three things that bite:
-
-- **`AV_DOMAIN` has to be the name people actually reach, exactly.** Calls are
-  authorised against it, so a wrong value rejects every attempt to join — and it
-  will not look like a domain problem when it happens.
-- **Open TCP 7881, not just the UDP port.** It is the fallback for people on
-  networks that block UDP, and leaving it shut is the usual reason one person
-  keeps dropping out while everyone else is fine.
-- **The LiveKit address you hand clients is a bare `wss://av.example.com`,
-  never with `/rtc` on the end.** The SDK appends that itself. This only comes
-  up if you skip the shipped setup and wire your own proxy.
+Set `AV_DOMAIN` to the name people actually reach, and a LiveKit key pair from
+`docker run --rm livekit/livekit-server generate-keys`. Open 80, 443, **UDP
+7882 and TCP 7881**. Then, in Armada: Settings → Voice → `https://av.example.com`.
 
 <Callout>
 
-The broker cannot tell your rooms from anyone else's — that is the point of it —
-so anyone who finds yours can use it. Bounding that is deliberately crude, since
-every precise tool would require knowing who is calling: a rate limit per caller
-address, a cap on how many people can be in one room, and how long a ticket
-stays valid. The room cap ships unset, which is right while you are serving
-people you know and worth changing the day you are not.
+Open TCP 7881, not just the UDP port — it is the fallback for networks that
+block UDP, and shutting it is the usual reason one person keeps dropping out.
+If you wire your own proxy, the LiveKit address is a bare `wss://av.example.com`,
+never with `/rtc`; the SDK appends that itself.
 
 </Callout>
 
 </Section>
 
-<Section marker="07">
+<Section emoji="📱">
 
-## Two things that don't follow you
+## The stock apps still work
 
-**Deep links stay on the hosted domain.** An invite link on `chat.example.com`
-opens in a browser rather than jumping straight into the app, because the
-installed app only claims links on `armada.buzz`. That is not a setting you can
-flip: making it work means editing the app's manifest, rebuilding, signing with
-your own key, and publishing a file at your domain that vouches for that key — at
-which point you are distributing your own build, and updating it is your job.
-The stock app still talks to your relay perfectly well. It costs your members one
-extra tap on an invite.
+Nothing about a backend is compiled into the Android or desktop builds. Your
+users install the normal app, add your relay in Settings, and they are on your
+stack.
 
-**Running infrastructure is running infrastructure.** OpenSearch does not arrive
-with the relay: you install, secure, tune and back up a real search cluster.
-Voice adds a box you keep patched and a certificate that has to keep renewing.
-Armada is serverless by default precisely so that most communities never need any
-of it.
+One catch: an invite link on your domain opens a browser rather than jumping
+into the app, because the installed app only claims links on `armada.buzz`. It
+costs your members one extra tap.
 
 </Section>
 
-<Cta signOff="own the whole road">
+<Cta emoji="🏴‍☠️" signOff="own the whole road">
 
-## Then nobody is in the path
+## Build your own fleet
 
-A client on your domain carrying your defaults, backed by relays you administer,
-carrying sealed traffic that nobody can read from the outside, and calls going
-through your own box. Or you stop after the client, point it at relays that
-already exist, and get most of that for an afternoon of work and no database to
-babysit.
+A client on your domain, relays you administer, calls through your own box — or
+just the client, pointed at relays that already exist, for an afternoon of work
+and no database to babysit.
 
 <div class="btn-row">
   <a class="btn btn-primary" href="https://soapbox.pub/blog/how-to-self-host-armada">The full walkthrough</a>

@@ -1,29 +1,22 @@
 ---
 /**
- * One card in a {@link Cards} grid.
+ * One card in a {@link Cards} grid: an emoji, a title, and a couple of lines.
  *
  * Renders as an `<a>` when given an `href`, so a card that points somewhere is
- * clickable across its whole face rather than only on a link buried in its last
- * line. The title is markdown inside the slot (`### …`) for the same reason
- * {@link Section}'s is: it stays in the page's heading tree.
- *
- * `cue` is the small uppercase mono line above the title — a label for what
- * kind of thing the card is, not a second heading.
+ * clickable across its whole surface rather than only on a link buried in its
+ * last line.
  */
 
 interface Props {
-  cue?: string;
+  emoji?: string;
   href?: string;
 }
 
-const { cue, href } = Astro.props;
-
-/** An off-site link gets `rel`; an internal one has no use for it. */
-const external = href?.startsWith("http");
+const { emoji, href } = Astro.props;
 const Tag = href ? "a" : "div";
 ---
 
-<Tag class="card" href={href} rel={external ? "noreferrer" : undefined}>
-  {cue && <span class="card-cue">{cue}</span>}
+<Tag class="card" href={href} rel={href?.startsWith("http") ? "noreferrer" : undefined}>
+  {emoji && <span class="card-emoji" aria-hidden="true">{emoji}</span>}
   <slot />
 </Tag>

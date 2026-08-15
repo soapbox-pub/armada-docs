@@ -1,191 +1,381 @@
 /*
- * The "feature page" kit: a lede, a thesis panel, numbered sections separated by
- * rules, cards, callouts and a closing CTA.
+ * The "feature page" kit: a hero, a thesis, sections led by big floating emoji,
+ * cards, callouts and a closing CTA.
  *
- * For long pages that have to persuade as well as instruct — the self-hosting
- * page is the first — where an unbroken column of prose gives a reader no way to
- * find the one section they came for.
+ * The layout is ported from Ditto's docs (`about.ditto.pub/self-hosting`) —
+ * its proportions, its rhythm, and its float animations — retinted to Armada's
+ * tokens. What makes that page work is that every section is announced by a
+ * shape you can find without reading, and that each one is a caption rather
+ * than an essay.
  *
  * Global CSS, deliberately. These wrap MARKDOWN children: the headings and
- * paragraphs inside `<Section>` are compiled from the `.mdx` file, not from the
- * component, so Astro's scoped styles never reach them and every rule would have
- * to be written `:global(...)` anyway. One plain stylesheet is the honest
- * version of that.
+ * paragraphs inside `<Section>` compile from the `.mdx` file, not from the
+ * component, so Astro's scoped styles never reach them and every rule would
+ * have to be written `:global(...)` anyway.
  *
- * Everything is built from the tokens in `theme.css`, so both themes and any
- * future retint follow automatically.
+ * Starlight puts its own styles in `@layer starlight.*`. This file is
+ * unlayered, so it wins outright and nothing here needs `!important`.
  */
 
-/* ── The lede ────────────────────────────────────────────────────────────
-   The sentence under the page title. Sized between the h1 and body copy so
-   the page opens with a claim rather than with paperwork. */
+/* ── The float ───────────────────────────────────────────────────────────
+   Three drifts at different periods and amplitudes, so a page full of emoji
+   never looks like one animation applied N times. Transform only, so they stay
+   on the compositor and never lay out. */
 
-.page-lede,
-.page-lede p {
-  margin-block: 0;
-  max-width: 44rem;
-  font-size: clamp(1.0625rem, 2.2vw, 1.3125rem);
-  line-height: 1.6;
-  text-wrap: pretty;
-  color: hsl(var(--muted-foreground));
+@keyframes armada-float-slow {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(12px, -18px) rotate(5deg);
+  }
+  50% {
+    transform: translate(-8px, -30px) rotate(-3deg);
+  }
+  75% {
+    transform: translate(15px, -12px) rotate(4deg);
+  }
 }
 
-.page-lede {
-  margin-bottom: 3rem;
+@keyframes armada-float-med {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate(-15px, -22px) rotate(-6deg);
+  }
+  66% {
+    transform: translate(10px, -35px) rotate(4deg);
+  }
 }
 
-.page-lede strong {
-  font-weight: 600;
-  color: hsl(var(--foreground));
+@keyframes armada-float-fast {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translate(8px, -20px) rotate(8deg) scale(1.05);
+  }
 }
 
-/* ── The thesis panel ────────────────────────────────────────────────────
-   One claim, stated once, before any instructions. The rose hairline down the
-   inline-start edge is the app's own way of marking a surface that is speaking
-   rather than listing. */
-
-.big-idea {
-  margin-block: 2rem 3rem;
-  padding: 1.75rem clamp(1.25rem, 4vw, 2rem);
-  border: 1px solid hsl(var(--border) / 0.55);
-  border-inline-start: 2px solid hsl(var(--primary));
-  border-radius: var(--radius);
-  background: hsl(var(--card) / 0.6);
-}
-
-.big-idea > :first-child {
-  margin-top: 0;
-}
-
-.big-idea > :last-child {
-  margin-bottom: 0;
-}
-
-/* Starlight sizes h2 for a section break; inside the panel it is a title, so it
-   sheds the top margin and the rule it would otherwise carry.
+/*
+ * No anchor icons on the kit's headings.
  *
- * Starlight wraps every heading in `.sl-heading-wrapper` (the heading plus its
- * anchor link), so the margins live on the WRAPPER and a rule aimed only at the
- * `h2` moves nothing. Both are named here, and everywhere else in this file, for
- * that reason. */
-.big-idea > .sl-heading-wrapper:first-child,
-.big-idea > :is(h2, h3):first-child {
-  margin-top: 0;
-}
-
-.big-idea :is(h2, h3) {
-  margin-top: 0;
-  border: 0;
-  padding: 0;
-  font-family: var(--font-mono);
-  font-size: clamp(1.25rem, 3vw, 1.625rem);
-  letter-spacing: -0.02em;
-}
-
-/* No anchor link on the thesis or the closer. Both are prose the page says
-   once; neither is a destination anyone deep-links to, and the icon crowds a
-   heading that has no section body of its own. */
+ * Starlight reserves end-of-line space for the icon with `padding-inline-end`
+ * on the heading and pulls it back with a negative margin — a pairing that
+ * every restyle here breaks, landing the icon on top of the last word. Ditto
+ * hides them on its styled headings for the same reason. The `id` survives, so
+ * the table of contents and any existing deep link still work; only the
+ * hover-to-copy affordance goes.
+ */
 .big-idea .sl-anchor-link,
+.page-section .sl-anchor-link,
+.card .sl-anchor-link,
 .page-cta .sl-anchor-link {
   display: none;
 }
 
+/* Every emoji on the page draws from the same stack, so one machine's fallback
+   font can't make one section's mark a different size or weight than the rest. */
+.page-hero-emoji,
+.big-idea-emoji,
+.section-emoji,
+.card-emoji,
+.callout-emoji,
+.page-cta-emoji {
+  font-family: var(--font-emoji);
+  font-style: normal;
+  line-height: 1;
+}
+
+/* ── The hero ────────────────────────────────────────────────────────────
+   Starlight's own hero, unwound. It puts the title beside the image and
+   left-aligns it on a wide viewport; this page wants the mark ABOVE a centered
+   title, with the title as the biggest thing on the screen. */
+
+[data-has-hero] .hero {
+  padding-block: clamp(2rem, 5vw, 3rem) clamp(2.5rem, 6vw, 4rem);
+}
+
+[data-has-hero] .hero .stack {
+  text-align: center;
+}
+
+[data-has-hero] .hero .copy {
+  align-items: center;
+  gap: 1.25rem;
+}
+
+[data-has-hero] .hero .actions {
+  justify-content: center;
+}
+
+/* The mark: the largest thing on the page, drifting. */
+.page-hero-emoji {
+  display: block;
+  font-size: clamp(4.5rem, 12vw, 6rem);
+  animation: armada-float-slow 7s ease-in-out infinite;
+}
+
+/*
+ * The gradient title — the one place the site's three lights appear at once:
+ * the rose blade, the gilt-cream of the body text, and the phosphor-cyan wake.
+ *
+ * `background-clip: text` paints the gradient through the glyphs, so the text
+ * colour has to be transparent for any of it to show.
+ */
+[data-has-hero] .hero h1 {
+  font-family: var(--font-mono);
+  font-size: clamp(2.25rem, 7vw, 4rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+  text-wrap: balance;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--primary)) 0%,
+    hsl(var(--foreground)) 52%,
+    hsl(var(--accent2)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  /* Descenders and the tops of glyphs get clipped by the text box otherwise,
+     which on a gradient fill shows as a hard cut rather than as a colour. */
+  padding-block: 0.06em;
+}
+
+[data-has-hero] .hero .tagline {
+  max-width: 34rem;
+  font-size: clamp(1.0625rem, 2vw, 1.375rem);
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+@media (min-width: 50rem) {
+  /* One column, not Starlight's 7fr/4fr split. */
+  [data-has-hero] .hero {
+    grid-template-columns: 100%;
+  }
+
+  [data-has-hero] .hero > .hero-html {
+    order: 0;
+    width: auto;
+  }
+}
+
+/* ── The thesis ──────────────────────────────────────────────────────────
+   Emoji and claim side by side, no panel. */
+
+.big-idea {
+  display: flex;
+  gap: clamp(1.25rem, 4vw, 2rem);
+  align-items: flex-start;
+  margin-block: 0 2.5rem;
+}
+
+.big-idea-emoji {
+  flex-shrink: 0;
+  font-size: clamp(3.5rem, 9vw, 5rem);
+  animation: armada-float-med 6s ease-in-out infinite;
+}
+
+.big-idea-text > :first-child {
+  margin-top: 0;
+}
+
+.big-idea-text > :last-child {
+  margin-bottom: 0;
+}
+
+.big-idea-text :is(h2, h3),
+.big-idea-text .sl-heading-wrapper {
+  margin: 0 0 1rem;
+  border: 0;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.big-idea-text p {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  text-wrap: pretty;
+  color: hsl(var(--muted-foreground));
+}
+
+.big-idea-text strong {
+  color: hsl(var(--foreground));
+}
+
 /* ── Sections ────────────────────────────────────────────────────────────
-   A numbered marker, a heading, and a rule above every section after the
-   first — the rhythm that turns a long page into a set of arrivals. */
+   A rule, then the emoji with the heading beside it, then the body under both.
+
+   A grid rather than a flex row because the heading is markdown in a slot — it
+   arrives as a SIBLING of the emoji, not wrapped with it, so there is nothing
+   to put a row around. */
 
 .page-section {
-  margin-block: 3.5rem;
-}
-
-.page-section + .page-section,
-.page-section:has(+ .page-cta),
-.page-cta {
-  position: relative;
-  padding-top: 3.5rem;
-}
-
-.page-section + .page-section::before,
-.page-cta::before {
-  content: "";
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline: 0;
-  height: 1px;
-  /* Fades out at both ends rather than butting into the column edges: a full
-     hairline reads as a table border, this reads as a horizon. */
-  background: linear-gradient(
-    to right,
-    transparent,
-    hsl(var(--chrome-divider)) 15%,
-    hsl(var(--chrome-divider)) 85%,
-    transparent
-  );
-}
-
-/* The section index. A cut-corner mono chip, the same bevel the buttons use —
-   the app's "hull" shape at the smallest size it still reads at. */
-.section-marker {
-  --cut: 0.375rem;
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 1rem;
   align-items: center;
-  justify-content: center;
-  min-width: 2rem;
-  padding: 0.1875rem 0.5rem;
-  clip-path: polygon(
-    var(--cut) 0,
-    100% 0,
-    100% calc(100% - var(--cut)),
-    calc(100% - var(--cut)) 100%,
-    0 100%,
-    0 var(--cut)
-  );
-  background: hsl(var(--accent2) / 0.12);
-  color: hsl(var(--accent2));
+  padding-block: 2.5rem;
+  border-top: 1px solid hsl(var(--chrome-divider));
+}
+
+.page-section > * {
+  grid-column: 1 / -1;
+}
+
+.section-emoji {
+  grid-column: 1;
+  grid-row: 1;
+  font-size: 3rem;
+  animation: armada-float-fast 6s ease-in-out infinite;
+}
+
+/*
+ * The size goes on the WRAPPER, not on the heading.
+ *
+ * Starlight reserves end-of-line room for the anchor link in `em` resolved
+ * against the wrapper, then pulls the icon back into it with a negative margin.
+ * Resizing only the `h2` leaves those two measured against different font
+ * sizes, and the icon lands on top of the last word.
+ */
+.page-section > .section-emoji + .sl-heading-wrapper,
+.page-section > .section-emoji + :is(h2, h3) {
+  grid-column: 2;
+  grid-row: 1;
+  margin-top: 0;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
-/* The heading directly under a marker loses its own top margin — the marker is
-   already the space before it. Starlight also draws a rule above an h2, which
-   would double the section divider. */
-.page-section > .section-marker + .sl-heading-wrapper,
-.page-section > .section-marker + :is(h2, h3) {
-  margin-top: 0.5rem;
-}
-
-.page-section > .section-marker + .sl-heading-wrapper :is(h2, h3),
-.page-section > .section-marker + :is(h2, h3) {
+/* Starlight draws a rule above every h2, which here would cut between the
+   emoji and its own heading — the section already has one above the row. */
+.page-section > .section-emoji + .sl-heading-wrapper :is(h2, h3) {
   margin-top: 0;
   border-top: 0;
   padding-top: 0;
-  font-family: var(--font-mono);
-  letter-spacing: -0.02em;
+  font-size: inherit;
 }
 
-/* ── Callouts ────────────────────────────────────────────────────────────
-   Lighter than a Starlight aside, for an aside to the *reader* rather than a
-   warning about the software: "you probably don't need this". */
+/* The body clears the emoji row rather than tucking in beside the heading. */
+.page-section > .section-emoji ~ *:not(.sl-heading-wrapper):not(:is(h2, h3)) {
+  grid-row: auto;
+}
+
+.page-section > p {
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+
+/* ── Cards ───────────────────────────────────────────────────────────── */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 1.25rem;
+  margin-block: 1.75rem;
+}
+
+/* Starlight gives every element that follows a sibling a top margin, which in a
+   grid lands on the second card only and drops it below the first. */
+.cards > * {
+  margin-top: 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1.5rem;
+  border: 1px solid hsl(var(--border) / 0.55);
+  border-radius: 1.25rem;
+  background: hsl(var(--card) / 0.7);
+  transition:
+    transform 0.2s ease,
+    border-color 0.25s ease;
+}
+
+.card:hover {
+  border-color: hsl(var(--primary));
+  transform: translateY(-4px);
+}
+
+a.card {
+  color: inherit;
+  text-decoration: none;
+}
+
+.card-emoji {
+  margin-bottom: 0.75rem;
+  font-size: 2.5rem;
+}
+
+/* A card title is a label on a surface, not a place anyone deep-links to. */
+.card .sl-anchor-link {
+  display: none;
+}
+
+.card .sl-heading-wrapper,
+.card :is(h3, h4) {
+  margin: 0 0 0.5rem;
+  border: 0;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: hsl(var(--foreground));
+}
+
+.card :is(h3, h4) {
+  font-size: inherit;
+}
+
+.card p {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  text-wrap: pretty;
+  color: hsl(var(--muted-foreground));
+}
+
+.card ul {
+  margin: 0;
+  padding-inline-start: 1.125rem;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ── Callouts ────────────────────────────────────────────────────────── */
 
 .callout {
   display: flex;
   gap: 1rem;
+  align-items: flex-start;
   margin-block: 1.75rem;
-  padding: 1.125rem 1.25rem;
-  border: 1px solid hsl(var(--accent2) / 0.28);
-  border-radius: var(--radius);
-  background: hsl(var(--accent2) / 0.06);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  background: hsl(var(--accent2) / 0.08);
 }
 
-.callout-mark {
-  flex: none;
-  font-family: var(--font-mono);
-  font-size: 0.9375rem;
-  font-weight: 700;
-  line-height: 1.7;
-  color: hsl(var(--accent2));
+.callout-emoji {
+  flex-shrink: 0;
+  font-size: 2rem;
 }
 
 .callout-body > :first-child {
@@ -196,126 +386,66 @@
   margin-bottom: 0;
 }
 
-/* ── Cards ───────────────────────────────────────────────────────────────
-   The soft radius of the app's content surfaces, against the near-sharp chrome
-   of the markers and buttons. */
-
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
-  gap: 1rem;
-  margin-block: 1.75rem;
-}
-
-.card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 1.375rem;
-  border: 1px solid hsl(var(--border) / 0.55);
-  border-radius: var(--radius);
-  background: hsl(var(--card) / 0.6);
-}
-
-/* A card that is itself a link gets the hover the plain one has no use for. */
-a.card {
-  color: inherit;
-  text-decoration: none;
-  transition:
-    border-color 0.15s ease,
-    background-color 0.15s ease;
-}
-
-a.card:hover {
-  border-color: hsl(var(--primary) / 0.6);
-  background: hsl(var(--card) / 0.9);
-}
-
-.card-cue {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: hsl(var(--accent2));
-}
-
-.card .sl-heading-wrapper {
-  margin: 0;
-}
-
-/* A card title is a label on the card, not a section of the page — the anchor
-   would link to something with no body. */
-.card .sl-anchor-link {
-  display: none;
-}
-
-.card :is(h3, h4) {
-  margin: 0;
-  border: 0;
-  padding: 0;
-  font-family: var(--font-mono);
-  font-size: 1.0625rem;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  color: hsl(var(--foreground));
-}
-
-.card p {
-  margin: 0;
-  font-size: 0.9375rem;
-  line-height: 1.6;
+.callout-body p {
+  font-size: 1rem;
+  line-height: 1.65;
   text-wrap: pretty;
-  color: hsl(var(--muted-foreground));
 }
 
-.card ul {
-  margin: 0;
-  padding-inline-start: 1.125rem;
-  font-size: 0.9375rem;
-}
-
-/* ── Button rows ─────────────────────────────────────────────────────────
-   Starlight's markdown styles put margins on descendants; the row owns its own
-   spacing. */
+/* ── Button rows ─────────────────────────────────────────────────────── */
 
 .btn-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-block: 1.75rem;
+  gap: 1rem;
+  margin-block: 2rem 0;
 }
 
 .btn-row .btn {
   margin: 0;
 }
 
-/* ── The closer ──────────────────────────────────────────────────────────
-   The page's last word, centered so it reads as a destination rather than as
-   one more section. */
+/* ── The closer ──────────────────────────────────────────────────────── */
 
 .page-cta {
-  margin-block: 3.5rem 1rem;
+  padding-block: 3.5rem 1rem;
+  border-top: 1px solid hsl(var(--chrome-divider));
   text-align: center;
 }
 
-.page-cta > .sl-heading-wrapper:first-of-type {
-  margin-top: 0;
+.page-cta-emoji {
+  display: block;
+  margin-bottom: 1.25rem;
+  font-size: clamp(3.5rem, 9vw, 4.5rem);
+  animation: armada-float-fast 5s ease-in-out infinite;
 }
 
+.page-cta .sl-anchor-link {
+  display: none;
+}
+
+.page-cta .sl-heading-wrapper,
 .page-cta :is(h2, h3) {
-  margin-top: 0;
+  margin: 0 0 0.75rem;
   border: 0;
   padding: 0;
   font-family: var(--font-mono);
-  font-size: clamp(1.375rem, 3.5vw, 1.875rem);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
   letter-spacing: -0.02em;
+  line-height: 1.2;
   text-wrap: balance;
+}
+
+.page-cta :is(h2, h3) {
+  font-size: inherit;
 }
 
 .page-cta p {
   margin-inline: auto;
   max-width: 38rem;
+  font-size: 1.125rem;
+  line-height: 1.6;
   text-wrap: pretty;
   color: hsl(var(--muted-foreground));
 }
@@ -325,10 +455,8 @@ a.card:hover {
 }
 
 /* The sign-off: the same cyan `$`, rose line and blinking caret the landing
-   page opens and closes on, so a reader who arrived from there recognizes the
-   end of a page. */
-/* Qualified by `.page-cta`, which is where it always sits: the closer's own
-   `p` rule is more specific than a bare `.sign-off` and would mute it. */
+   page opens and closes on. Qualified by `.page-cta`, whose own `p` rule is
+   more specific than a bare `.sign-off` and would mute it. */
 .page-cta .sign-off {
   margin-top: 2.5rem;
   font-family: var(--font-mono);
@@ -336,10 +464,14 @@ a.card:hover {
   color: hsl(var(--primary));
 }
 
-.sign-off .prompt {
+.page-cta .sign-off .prompt {
   color: hsl(var(--accent2));
 }
 
-.sign-off .caret {
+.page-cta .sign-off .caret {
   animation: armada-caret 1s step-end infinite;
 }
+
+/* The global reduced-motion block in `theme.css` already collapses every
+   animation here; the emoji rest at their untransformed position, which is
+   where they are drawn. */

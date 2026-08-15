@@ -95,6 +95,13 @@
     Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
+
+  /* The app's own emoji stack (`tailwind.config.ts`). Named explicitly wherever
+     an emoji is decoration rather than text: left to the body stack, one
+     machine's fallback font renders a mark at a different size and weight than
+     the rest of the page. */
+  --font-emoji: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji",
+    "Twemoji Mozilla", "Android Emoji", "EmojiSymbols", sans-serif;
 }
 
 /* ── Brand keyframes ──────────────────────────────────────────────────────

@@ -1,31 +1,26 @@
 ---
 /**
- * One numbered section of a feature page: a mono index chip, then whatever
- * markdown follows it.
+ * One section of a feature page: a big floating emoji, the heading beside it,
+ * and the body underneath both.
  *
- * The heading is written as ordinary markdown INSIDE the component rather than
- * passed as a prop, which is what keeps it in the page's heading tree — so
- * Starlight's "On this page" still lists it and it still gets an anchor. A
- * `title` prop would render an `<h2>` that the table of contents, built from
- * the markdown AST, would never see.
+ * The emoji is the navigation. A reader scanning a long how-to finds the part
+ * they came for by shape long before they find it by reading — which is the one
+ * thing a numbered chip cannot do, since an index tells you where a section
+ * sits and never what it is.
  *
- * ```mdx
- * <Section marker="01">
- * ## The web client
- * …
- * </Section>
- * ```
+ * The heading itself stays ordinary markdown in the slot, so it keeps its `id`
+ * and its place in the table of contents. The grid in `docs-page.css` lifts it
+ * up beside the emoji.
  */
 
 interface Props {
-  /** The index shown in the chip. Two digits, by convention. */
-  marker: string;
+  emoji: string;
 }
 
-const { marker } = Astro.props;
+const { emoji } = Astro.props;
 ---
 
 <section class="page-section">
-  <span class="section-marker" aria-hidden="true">{marker}</span>
+  <span class="section-emoji" aria-hidden="true">{emoji}</span>
   <slot />
 </section>

@@ -124,3 +124,83 @@
   font-family: var(--font-mono);
   letter-spacing: -0.02em;
 }
+
+/*
+ * Hero pages (frontmatter `hero`, which Starlight marks with `data-has-hero`).
+ *
+ * Starlight's own hero puts the title beside the image on a wide viewport and
+ * left-aligns it. A page that has to announce itself wants the opposite —
+ * centered, with the title as the biggest thing on the screen — so the
+ * two-column rule is unwound and the type is scaled up. All of Starlight's hero
+ * styles are in `@layer starlight.core`, so this unlayered block wins outright
+ * and none of it needs `!important`.
+ */
+[data-has-hero] .hero {
+  padding-block: clamp(2rem, 6vw, 4rem) 1rem;
+}
+
+[data-has-hero] .hero .stack {
+  text-align: center;
+}
+
+[data-has-hero] .hero .copy {
+  align-items: center;
+}
+
+[data-has-hero] .hero .actions {
+  justify-content: center;
+}
+
+[data-has-hero] .hero h1 {
+  font-family: var(--font-mono);
+  font-size: clamp(2rem, 7vw, 3.5rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+[data-has-hero] .hero .tagline {
+  max-width: 44ch;
+  text-wrap: pretty;
+}
+
+@media (min-width: 50rem) {
+  /* One column, not Starlight's 7fr/4fr split: the mark belongs above the
+     title here, the way it does on the landing page. */
+  [data-has-hero] .hero {
+    grid-template-columns: 100%;
+  }
+
+  [data-has-hero] .hero > :is(img, .hero-html) {
+    order: 0;
+    width: min(100%, 8rem);
+  }
+}
+
+/*
+ * Starlight's hero buttons, reshaped to the app's cut-corner control.
+ *
+ * `.sl-link-button` is a pill (`border-radius: 999rem`), which is the one shape
+ * Armada's UI never uses — the whole posture is a beveled hull. This restates
+ * the geometry from `controls.css` rather than reusing the class, because the
+ * markup is Starlight's and the frontmatter has no way to add a class to it.
+ */
+.sl-link-button {
+  --cut: 0.7rem;
+  border-radius: 0.55rem;
+  clip-path: polygon(
+    var(--cut) 0,
+    100% 0,
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    0 100%,
+    0 var(--cut)
+  );
+  font-family: var(--font-sans);
+  font-weight: 500;
+}
+
+/* `minimal` is the text-only variant, which a bevel would look clipped on. */
+.sl-link-button.minimal {
+  clip-path: none;
+}
