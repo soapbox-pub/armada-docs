@@ -1,3 +1,7 @@
+## Git
+
+Always commit after finishing a set of changes, without waiting to be asked.
+
 ## Development
 
 When starting the dev server, use background mode:
