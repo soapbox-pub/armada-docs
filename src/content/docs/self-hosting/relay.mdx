@@ -1,0 +1,111 @@
+---
+title: Nostr relay
+description: Whether to run your own relay, what a relay can and cannot see, and how to stand up ditto-relay or one of the lighter implementations.
+sidebar:
+  label: Nostr relay
+  order: 4
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import Callout from "../../../components/docs/Callout.astro";
+import Cta from "../../../components/docs/Cta.astro";
+import Lede from "../../../components/docs/Lede.astro";
+import Section from "../../../components/docs/Section.astro";
+
+<Lede>
+
+A relay stores events and hands them to whoever asks. Armada's communities ride
+across relays gift-wrapped, so a relay carrying yours holds **sealed envelopes
+addressed to nobody it can identify** — and it is not the only one holding them.
+
+</Lede>
+
+<Section mark="relay">
+
+## You probably do not need one
+
+Any Nostr relay carries an Armada community. [nostr.watch](https://nostr.watch)
+lists hundreds, run by people who have never heard of yours, and a community
+spread across a few of them survives any one of them going down.
+
+Running your own does not make the community yours, faster, or more private. It
+adds a machine you now have to keep online, and if you point your members at
+*only* that machine you have rebuilt the single point of failure you left
+Discord to escape.
+
+The good reasons are the public ones: the network is made of relays, and there
+are not many operators. Run one because other people's events should have
+somewhere to go.
+
+</Section>
+
+<Section mark="terminal">
+
+## ditto-relay
+
+Soapbox runs [ditto-relay](https://gitlab.com/soapbox-pub/ditto-relay):
+AGPL-3.0, written for Bun, storing events in OpenSearch. It is the heavy
+option — full-text search (NIP-50), negentropy sync (NIP-77), expiration,
+protected events, Prometheus metrics — and it is what `relay.ditto.pub` is.
+
+<Callout>
+
+It ships no Dockerfile and no compose file, so you are writing the service
+definition and running an OpenSearch 2.x cluster yourself. Two settings catch
+everyone: `NOSTR_NSEC` must be the `nsec…` form, and the port is `13131`.
+
+</Callout>
+
+If you want a relay rather than a search engine, the small implementations are
+the better first box: [strfry](https://github.com/hoytech/strfry) (C++, LMDB,
+runs on almost nothing) and
+[nostr-rs-relay](https://github.com/scsibug/nostr-rs-relay) (Rust, SQLite) both
+carry Armada traffic without a cluster underneath them.
+
+</Section>
+
+<Section mark="decks">
+
+## Point Armada at it
+
+Users add relays under **Settings → App relays**, and that list is theirs. To
+ship a default with a client you host, build with `VITE_APP_RELAYS` — see
+[the web app's configuration](/self-hosting/web-app/#configuration).
+
+Note what the app relays are actually for: profiles, lists, and other ordinary
+Nostr traffic. A community's own traffic follows the relay list that travels
+with its invite — **Settings → Community relays** — so adding a relay to the app
+list is not how somebody joins your community.
+
+</Section>
+
+<Section mark="ship">
+
+## NIP-29 servers
+
+Armada also speaks [NIP-29](https://github.com/nostr-protocol/nips/blob/master/29.md),
+where the relay *is* the server: it owns membership, moderation and the
+messages, and channels are groups on it. That is the opposite trade from a
+Concord community — an operator with real authority, and no end-to-end
+encryption — and it is the mode to pick when you want to run something rather
+than avoid running anything.
+
+It needs a relay that implements NIP-29 specifically; the client will talk to
+any of them.
+
+</Section>
+
+<Cta mark="beacon" signOff="keep a light on">
+
+## One more relay
+
+Every client on Nostr benefits from a relay that stays up and takes anonymous
+reads. Yours does not have to be big, and it does not have to be about Armada.
+
+<div class="btn-row">
+  <a class="btn btn-primary" href="https://gitlab.com/soapbox-pub/ditto-relay">ditto-relay</a>
+  <a class="btn btn-ghost" href="https://nostr.watch">See who else is running one</a>
+</div>
+
+</Cta>

@@ -1,0 +1,162 @@
+---
+title: Discord bridge
+description: Run the Armada Discord bridge — two-way messages with per-user attribution, a portal to link channels, and the encryption tradeoff you are making by using it.
+sidebar:
+  label: Discord bridge
+  order: 6
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import BigIdea from "../../../components/docs/BigIdea.astro";
+import Callout from "../../../components/docs/Callout.astro";
+import Card from "../../../components/docs/Card.astro";
+import Cards from "../../../components/docs/Cards.astro";
+import Cta from "../../../components/docs/Cta.astro";
+import Lede from "../../../components/docs/Lede.astro";
+import Section from "../../../components/docs/Section.astro";
+
+<Lede>
+
+[armada-discord-bridge](https://gitworkshop.dev/soapbox.pub/relay.ngit.dev/armada-discord-bridge)
+connects a Discord channel and an Armada channel in both directions, with each
+person's own name on both sides. It exists so a community can talk across the
+gap **before** anyone has to migrate.
+
+</Lede>
+
+{/* `sea` rather than `bridge`, which the section below already carries: the
+    thesis is about the water the bridge crosses, not the span. */}
+<BigIdea mark="sea">
+
+## A bridge is a hole
+
+Anything mirrored into Discord is plaintext to Discord. That is not a bug in the
+bridge — it is what bridging *to a hosted service* means, and it is why linking
+a channel needs an in-channel confirmation from someone holding Manage
+Channels.
+
+</BigIdea>
+
+<Section mark="bridge">
+
+## What it does
+
+<Cards>
+<Card>
+
+### Both ways
+
+Text, long-message splitting, replies, edits, deletes, reactions and typing
+indicators, plus catch-up backfill after downtime.
+
+</Card>
+<Card>
+
+### Per-user identity
+
+Discord messages arrive in Armada signed by a puppet key derived per Discord
+user, so each person keeps one stable identity. Armada messages arrive in
+Discord through a webhook wearing their kind-0 name and avatar.
+
+</Card>
+<Card>
+
+### Attachments
+
+Re-hosted to a [Blossom server](/self-hosting/blossom/) when one is configured,
+with a CDN link as the fallback.
+
+</Card>
+<Card>
+
+### Server import
+
+Mint a whole Armada community from a Discord server — channels, roles and
+grants — with genesis signed by the owner's own key in their browser, then
+backfill the history.
+
+</Card>
+</Cards>
+
+</Section>
+
+<Section mark="ship">
+
+## Run the portal
+
+The portal is the interesting deployment: Discord OAuth, a setup wizard, the
+confirmation flow and a dashboard, running bridges in-process for however many
+communities use it. The runtime is [Bun](https://bun.sh); Postgres is the only
+other dependency.
+
+```sh
+git clone nostr://soapbox.pub/relay.ngit.dev/armada-discord-bridge
+cd armada-discord-bridge
+npm install
+docker compose up -d postgres
+
+DATABASE_URL=postgres://bridge:bridge@localhost:5432/bridge \
+PORTAL_SEAL_KEY=$(openssl rand -hex 32) \
+bun run packages/portal/src/index.ts
+```
+
+Build the SPA once with `vite build packages/portal/web`; the API then serves
+`web/dist` itself. It binds loopback and expects a TLS-terminating proxy in
+front of it.
+
+| Variable | |
+| --- | --- |
+| `DATABASE_URL` | **Required.** Postgres connection string. |
+| `PORTAL_SEAL_KEY` | **Required.** 64 hex chars. Seals key material at rest. |
+| `PORTAL_BASE_URL` | Public origin. Decides OAuth redirects and whether cookies are `Secure`. |
+| `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | The OAuth application. |
+| `DISCORD_TOKEN` | Bot token, with the MESSAGE_CONTENT intent enabled. Without it no bridge can go live. |
+| `BLOSSOM_SERVER` | Where attachments are re-hosted. Empty leaves CDN links. |
+| `IMPORT_DEFAULT_RELAYS` | Relays for communities minted by an import. |
+| `PORTAL_DEV_LOGIN` | Fabricates a session for local work. It refuses to boot in production. |
+
+<Callout>
+
+`PORTAL_SEAL_KEY` is permanent. Rotating it invalidates every sealed secret in
+the database — which is to say every bridge — so generate it once and back it up
+somewhere that is not the same disk.
+
+</Callout>
+
+There is also a standalone single-link bridge (`packages/bridge`), provisioned
+entirely from environment variables and started with `docker compose --profile
+bridge up`. It links one Discord channel to one Concord channel, with no portal
+and no web UI.
+
+</Section>
+
+<Section mark="decks">
+
+## Point Armada at it
+
+Build the client with `VITE_BRIDGE_PORTAL_URL` set to the portal's origin — see
+[the web app's configuration](/self-hosting/web-app/#configuration). It is empty
+by default, which hides every Discord affordance in the app; set it and the
+import buttons appear on the Add dialog, the welcome page, the Discover grid and
+community settings.
+
+The client never dials it. The URL is only the target of links a user clicks,
+and the import runs on the portal, which signs the resulting community with the
+user's own key and hands back an ordinary invite.
+
+</Section>
+
+<Cta mark="crest" signOff="hold the door open">
+
+## For the crossing, not for the destination
+
+The bridge is scaffolding: it lowers the cost of trying Armada while half your
+people are still on Discord. The point is to take it down afterwards.
+
+<div class="btn-row">
+  <a class="btn btn-primary" href="https://gitworkshop.dev/soapbox.pub/relay.ngit.dev/armada-discord-bridge">Read the source</a>
+  <a class="btn btn-ghost" href="/self-hosting/web-app/">Host the web app</a>
+</div>
+
+</Cta>

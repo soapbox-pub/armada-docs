@@ -1,0 +1,116 @@
+---
+title: Blossom server
+description: Run a Blossom media server for Armada — blobs addressed by SHA-256, with the config that actually matters when the blobs arriving are encrypted.
+sidebar:
+  label: Blossom server
+  order: 5
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import Callout from "../../../components/docs/Callout.astro";
+import Cta from "../../../components/docs/Cta.astro";
+import Lede from "../../../components/docs/Lede.astro";
+import Section from "../../../components/docs/Section.astro";
+
+<Lede>
+
+[Blossom](https://github.com/hzrd149/blossom) is where the pictures go. A server
+stores blobs and serves them back by their SHA-256 hash, with Nostr keys as the
+only identity — **the cheapest useful thing to run on this list**, and the one
+shortest of operators.
+
+</Lede>
+
+<Section mark="blossom">
+
+## What it holds
+
+Content, addressed by its own hash. `GET /<sha256>` returns the bytes; `PUT
+/upload` takes them, authorized by a signed kind-24242 event. Because the
+address *is* the hash, the same file uploaded twice is one blob, and a blob
+mirrored to a second server keeps the same URL path — which is why Armada
+uploads to several and treats none of them as the home.
+
+What a server holding Armada media can see is less than you would think. In a
+Concord community, attachments are encrypted client-side before upload and
+arrive as opaque `application/octet-stream` — community icons and banners
+included. The server stores ciphertext and a hash.
+
+</Section>
+
+<Section mark="ship">
+
+## Run it
+
+[blossom-server](https://github.com/hzrd149/blossom-server) is the reference
+implementation: Deno 2, Hono, SQLite or libSQL, with local-filesystem or
+S3-compatible storage.
+
+```sh
+git clone https://github.com/hzrd149/blossom-server
+cd blossom-server
+cp config.example.yml config.yml
+docker compose up --build
+```
+
+It listens on `3000`. Set `publicDomain` to the hostname it is reachable at — a
+bare hostname, no scheme — because that is what goes into the `url` of every
+blob descriptor it hands back, and what BUD-11 checks a `server` tag against.
+TLS goes on your proxy, as usual.
+
+| Key | Why you touch it |
+| --- | --- |
+| `publicDomain` | The hostname in returned blob URLs. Wrong here means clients fetch from the wrong origin. |
+| `storage.backend` | `local` or `s3`. S3 can redirect `GET` to a `publicURL` instead of proxying bytes. |
+| `storage.rules` | Retention *and* an upload allowlist, matched by MIME glob. |
+| `upload.maxSize` | 2 GB by default, which is more generosity than most operators mean. |
+| `upload.requireAuth` | On by default. Leave it on unless you enjoy hosting other people's warez. |
+| `list.enabled` | `GET /list/:pubkey`, off by default. |
+| `media.enabled` | BUD-05 resize and transcode. Needs ffmpeg. |
+
+<Callout>
+
+**Watch the MIME rules if you serve Armada.** Once `storage.rules` is non-empty,
+anything whose type matches no rule is rejected with `415` — and encrypted
+attachments are `application/octet-stream`, not `image/*`. A tidy-looking
+image-and-video allowlist quietly breaks every upload in a community while
+leaving public Nostr posts working.
+
+For the same reason `media.enabled` buys nothing here: there is no image inside
+that blob to optimize.
+
+</Callout>
+
+</Section>
+
+<Section mark="decks">
+
+## Point Armada at it
+
+**Settings → Media servers** takes a list. A user's own servers are published as a
+kind-10063 list, so other Nostr clients pick them up too, and a toggle decides
+whether uploads also go to the app's defaults.
+
+To ship a default with a client you host, build with
+`VITE_APP_BLOSSOM_SERVERS` — see
+[the web app's configuration](/self-hosting/web-app/#configuration). Trailing
+slashes are fine; several servers are better than one, because Armada mirrors
+uploads across them and a blob that exists in two places survives one of them
+disappearing.
+
+</Section>
+
+<Cta mark="beacon" signOff="hold some bytes">
+
+## The easy one to volunteer for
+
+A relay is a commitment. A Blossom server is a disk, a proxy and a retention
+rule — and it serves every Nostr app, not just Armada.
+
+<div class="btn-row">
+  <a class="btn btn-primary" href="https://github.com/hzrd149/blossom-server">blossom-server</a>
+  <a class="btn btn-ghost" href="https://github.com/hzrd149/blossom">The BUDs</a>
+</div>
+
+</Cta>

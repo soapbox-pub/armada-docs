@@ -1,0 +1,144 @@
+---
+title: Web app
+description: Run the Armada client on your own domain. It is a static site — build it with Docker, serve it with nginx, and point it at whichever relays, media servers and voice brokers you like.
+sidebar:
+  label: Web app
+  order: 2
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import Callout from "../../../components/docs/Callout.astro";
+import Card from "../../../components/docs/Card.astro";
+import Cards from "../../../components/docs/Cards.astro";
+import Cta from "../../../components/docs/Cta.astro";
+import Lede from "../../../components/docs/Lede.astro";
+import Section from "../../../components/docs/Section.astro";
+
+<Lede>
+
+The client is a **static site**. There is no backend to deploy with it and no
+database behind it — it talks to relays and brokers over URLs it is handed at
+runtime, so hosting it is hosting a folder of files.
+
+</Lede>
+
+<Section mark="ship">
+
+## Run it
+
+The repo ships a `Dockerfile` that builds the client and serves it with nginx.
+
+```sh
+git clone nostr://soapbox.pub/relay.ngit.dev/armada
+cd armada
+docker build -t armada .
+docker run -p 8080:80 armada
+```
+
+That address is a Nostr remote, so `git clone` needs
+[ngit](https://gitworkshop.dev/ngit) installed once. Put your own TLS in front
+of the container — microphones only work in a secure context, so voice needs a
+real certificate anywhere but `localhost`.
+
+</Section>
+
+<Section mark="terminal">
+
+## Configuration
+
+Settings bake in at build time, as Docker build args. Every one of them is a
+*default*: the user can change it in Settings afterwards, and their choice
+wins.
+
+| Build arg | What it does |
+| --- | --- |
+| `VITE_APP_NAME` | What the app calls itself. |
+| `VITE_APP_RELAYS` | The relays a fresh user starts with, for profiles and lists. |
+| `VITE_BROADCAST_RELAYS` | Write-only relays. Profiles and personal lists go here too, so other Nostr clients can find them; nothing is read back. |
+| `VITE_SEARCH_RELAYS` | Where NIP-50 search and mention autocomplete go. |
+| `VITE_NIP65_DISCOVERY_RELAYS` | Public indexes queried once after login to find the user's own relay list. Discovery only — they never join the pool. |
+| `VITE_APP_BLOSSOM_SERVERS` | Default media servers uploads fall back to. |
+| `VITE_CONCORD_AV_SERVERS` | Voice token brokers. |
+| `VITE_BRIDGE_PORTAL_URL` | A [Discord bridge](/self-hosting/discord-bridge/) portal. Empty hides every Discord affordance in the client. |
+| `VITE_NOSTR_PUSH_PUBKEY`, `VITE_NOSTR_PUSH_RELAYS` | A content-blind push gateway, for Web Push while the app is closed. |
+
+```sh
+docker build \
+  --build-arg VITE_APP_NAME="Example Chat" \
+  --build-arg VITE_APP_RELAYS="wss://relay.example.com" \
+  -t example-chat .
+```
+
+<Callout>
+
+**There is no relay pin, on purpose.** These are defaults the user can edit, not
+sockets they are stuck with. A pinned relay is dialed on boot whether or not
+that origin speaks Nostr — and `ws://localhost` means nothing on a phone.
+
+</Callout>
+
+<Callout mark="?">
+
+Anything with `VITE_` in front of it is compiled into the bundle and readable in
+browser developer tools. That is fine for relay URLs; it is why there is no
+build arg anywhere here that takes a secret.
+
+</Callout>
+
+</Section>
+
+<Section mark="swatches">
+
+## Branding
+
+<Cards>
+<Card>
+
+### Look
+
+- **Logo** — `public/logo.svg`
+- **Social card** — `public/og.png`
+- **Colors** — `builtinThemes` in `src/themes.ts`
+
+</Card>
+<Card>
+
+### Three colors
+
+A background, a text color and a primary. Every other token — surfaces, borders,
+muted text — is derived from those, so retinting is three values, not a
+stylesheet.
+
+</Card>
+</Cards>
+
+</Section>
+
+<Section mark="decks">
+
+## The stock apps still work
+
+Nothing about a backend is compiled into the Android, iPhone or desktop builds.
+Your users install the normal app, add your relay in Settings, and they are on
+your stack.
+
+One catch: an invite link on your domain opens a browser rather than jumping
+into the app, because the installed app only claims links on `armada.buzz`. It
+costs your members one extra tap.
+
+</Section>
+
+<Cta mark="fleet" signOff="ship it on your own domain">
+
+## That is the whole of it
+
+A container and a certificate. The relays, media servers and voice brokers it
+points at can stay other people's — or become yours, one page at a time.
+
+<div class="btn-row">
+  <a class="btn btn-primary" href="https://soapbox.pub/blog/how-to-self-host-armada">The full walkthrough</a>
+  <a class="btn btn-ghost" href="https://gitworkshop.dev/soapbox.pub/relay.ngit.dev/armada">Read the source</a>
+</div>
+
+</Cta>

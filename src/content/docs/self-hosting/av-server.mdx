@@ -1,0 +1,95 @@
+---
+title: Audio/video server
+description: Run Armada's voice and video stack — stock LiveKit plus a blind token broker that never learns which community a call belongs to.
+sidebar:
+  label: Audio/video server
+  order: 3
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import Callout from "../../../components/docs/Callout.astro";
+import Cta from "../../../components/docs/Cta.astro";
+import Lede from "../../../components/docs/Lede.astro";
+import Section from "../../../components/docs/Section.astro";
+
+<Lede>
+
+The one piece that has to be a **real server**, because audio cannot travel the
+way messages do. Everything else in Armada is store-and-forward; a call is a
+live media path, and something has to sit in the middle of it.
+
+</Lede>
+
+<Section mark="levels">
+
+## What it is
+
+Stock [LiveKit](https://livekit.io), plus a small token broker in front of it.
+
+The broker checks that you hold the key to a channel and issues a ticket for one
+room. That is the whole of its knowledge: it never learns which community the
+room belongs to, who else is in it, or what it is called — and the audio is
+encrypted end to end under per-sender keys regardless, so LiveKit is forwarding
+packets it cannot open. The design is specified as
+[CORD-07](https://github.com/concord-protocol/concord).
+
+</Section>
+
+<Section mark="ship">
+
+## Run it
+
+```sh
+git clone nostr://chad@chadwick.site/relay.ngit.dev/armada-av
+cd armada-av/deploy/single
+cp .env.example .env
+docker compose up -d
+```
+
+Set `AV_DOMAIN` to the name people actually reach, and a LiveKit key pair from
+`docker run --rm livekit/livekit-server generate-keys`. Open 80, 443, **UDP
+7882 and TCP 7881**.
+
+<Callout>
+
+Open TCP 7881, not just the UDP port — it is the fallback for networks that
+block UDP, and shutting it is the usual reason one person keeps dropping out.
+If you wire your own proxy, the LiveKit address is a bare `wss://av.example.com`,
+never with `/rtc`; the SDK appends that itself.
+
+</Callout>
+
+</Section>
+
+<Section mark="decks">
+
+## Point Armada at it
+
+In the app: **Settings → Voice → `https://av.example.com`**. That is per-user
+and takes effect immediately, so you can test a broker before anyone else
+touches it.
+
+To make it the default for a client you host, build with
+`VITE_CONCORD_AV_SERVERS` — see
+[the web app's configuration](/self-hosting/web-app/#configuration). As with
+every other server URL in Armada it stays editable afterwards; a user who
+prefers someone else's broker keeps working, in the same call.
+
+</Section>
+
+<Cta mark="beacon" signOff="carry the calls">
+
+## Worth running in public
+
+A voice broker is the piece of Nostr infrastructure with the fewest operators,
+because it is the only one that costs real bandwidth. It is also the one where
+running it teaches you the least about the people using it — which is exactly
+what makes it safe to offer to strangers.
+
+<div class="btn-row">
+  <a class="btn btn-primary" href="/self-hosting/web-app/">Host the web app</a>
+  <a class="btn btn-ghost" href="https://github.com/concord-protocol/concord">Read CORD-07</a>
+</div>
+
+</Cta>

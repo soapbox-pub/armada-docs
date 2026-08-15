@@ -154,6 +154,31 @@
   }
 }
 
+/* ── The lede ────────────────────────────────────────────────────────────
+   The sentence under the title, on the pages that carry an ordinary Starlight
+   title rather than the hero. Larger and muted, so the page opens on a voice
+   rather than on a heading and then a table. */
+
+.page-lede {
+  margin-block: 0 2.5rem;
+  max-width: 42rem;
+  font-size: clamp(1.0625rem, 2vw, 1.25rem);
+  line-height: 1.65;
+  text-wrap: pretty;
+  color: hsl(var(--muted-foreground));
+}
+
+/* The markdown in the slot compiles to its own `<p>`, which Starlight sizes. */
+.page-lede p {
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.page-lede strong {
+  color: hsl(var(--foreground));
+}
+
 /* ── The thesis ──────────────────────────────────────────────────────────
    Emoji and claim side by side, no panel. */
 
