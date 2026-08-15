@@ -1,65 +1,17 @@
 ---
 /**
- * The homepage.
+ * The homepage: a single full-viewport hero — the crest and wordmark over the
+ * ASCII sea, and the two ways into the docs — and then the footer.
  *
- * Modeled on Armada's own logged-out landing (`src/components/landing/LandingPage.tsx`
- * in the armada repo) and following its beats, retargeted from "join this" to
- * "read this":
- *
- *   1. the hero — the crest and wordmark over the ASCII sea, with a cue that
- *      scrolls into the answer rather than an arrow floating on its own
- *   2. the statement — two monospace lines, the second answering the first
- *   3. the map — where the documentation actually is
- *   4. the closer — the ask, arriving with its reasons still on screen
- *
- * Scrolling raises the sea's waterline until the statement floats on open
- * water; that is the whole reason the sea is `sticky` and the sections below
- * are transparent.
+ * There is deliberately nothing below the fold. The sea is still `sticky` with
+ * its height cancelled, so the small amount of scroll the footer adds lifts the
+ * waterline rather than sliding the ocean off the top of the screen.
  */
 import AsciiSea from "../components/AsciiSea.astro";
 import ArmadaCrest from "../components/brand/ArmadaCrest.astro";
 import BrandMark from "../components/brand/BrandMark.astro";
 import Landing from "../layouts/Landing.astro";
 import { APP_NAME, LINKS, SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "../consts";
-
-/**
- * The documentation map. Two internal sections carry the site's actual
- * subject; the two outbound cards exist because "where is the app" and "where
- * is the protocol" are the next two questions a reader has, and answering them
- * on the homepage is cheaper than a support thread.
- */
-const CARDS = [
-  {
-    href: "/how-it-works/",
-    title: "How it works",
-    body:
-      "Communities with no host: how keys, relays and encrypted streams add up to a chat app that nobody owns.",
-    cue: "Start here",
-  },
-  {
-    href: "/self-hosting/",
-    title: "Self-hosting",
-    body:
-      "Run your own relay, voice server and web client. What each piece does, and which ones you can skip.",
-    cue: "Run your own",
-  },
-  {
-    href: LINKS.concord,
-    title: "The protocol",
-    body:
-      "Concord — the serverless, end-to-end encrypted community protocol Armada is built on, specified in the open.",
-    cue: "CORD-01..07",
-    external: true,
-  },
-  {
-    href: LINKS.downloads,
-    title: "Get the app",
-    body:
-      "Linux, Windows, macOS, Android, iPhone, and the browser. Your key is your account, so they are all the same place.",
-    cue: "Downloads",
-    external: true,
-  },
-];
 
 const title = `${SITE_TITLE} — how Armada works, and how to run it yourself`;
 
@@ -99,120 +51,27 @@ const structuredData = {
 <Landing title={title} structuredData={structuredData}>
   {/*
     Viewport-locked sea. `sticky` pins it while the negative margin cancels the
-    height it would otherwise add to the scroll length, so the content below
-    starts at the top of the page and scrolls straight over it.
+    height it would otherwise add to the scroll length, so the hero sits at the
+    top of the page rather than after a screenful of ocean.
   */}
   <div class="sea-slot">
     <AsciiSea />
   </div>
 
-  <div class="deck">
-    {/* ── Hero ──────────────────────────────────────────────────────────── */}
-    <section class="hero">
-      <div class="hero-mark">
-        <ArmadaCrest size={150} />
-        <BrandMark
-          suffix="docs"
-          tagline="how it works, and how to run your own"
-        />
-      </div>
+  <section class="hero">
+    <div class="hero-mark">
+      <ArmadaCrest size={150} />
+      <BrandMark
+        suffix="docs"
+        tagline="how it works, and how to run your own"
+      />
+    </div>
 
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="/how-it-works/">Read the docs</a>
-        <a class="btn" href="/self-hosting/">Self-host it</a>
-      </div>
-
-      {/*
-        Cue and scroll target are one control: the statement below IS the
-        answer, so a detached arrow reads as a second affordance.
-
-        U+2193 (↓), not a fancier chevron: it is in the WGL4 core set, so every
-        system font has a real glyph for it instead of tofu. Kept off the mono
-        stack for the same reason.
-      */}
-      <a class="cue" href="#statement">
-        What is this?
-        <span class="cue-arrow" aria-hidden="true">&#8595;</span>
-      </a>
-    </section>
-
-    {/* ── The statement ─────────────────────────────────────────────────── */}
-    <section class="statement" id="statement" data-rise>
-      {/*
-        `text-wrap: balance` because each line only fits on one line on a wide
-        viewport — where it has to wrap, both halves stay even rather than
-        leaving one word stranded.
-      */}
-      <p class="claim muted">Most chat apps are documented by whoever runs the servers.</p>
-      <p class="claim">Armada has no servers to run. So here is all of it.</p>
-
-      {/* A caption strip, not a second block of copy, so it stays subordinate
-          to the statement. */}
-      <ul class="strip">
-        <li><a href={LINKS.app} rel="noreferrer">armada.buzz</a></li>
-        <li><a href={LINKS.repo} rel="noreferrer">Source</a></li>
-        <li><a href={LINKS.concord} rel="noreferrer">Concord</a></li>
-        <li><a href={LINKS.issues} rel="noreferrer">Issues</a></li>
-      </ul>
-
-      {/* A `<details>` rather than a scripted disclosure: it opens with no JS,
-          it is in the DOM either way, and a crawler reads the answer whether
-          or not it is expanded. */}
-      <details class="why">
-        <summary>Why?</summary>
-        <p>
-          Armada is built on <a href={LINKS.nostr} rel="noreferrer">Nostr</a>, a
-          social protocol which redefines the Internet. On Nostr, apps are
-          separate from infra. Users sign events with private keys and
-          distribute them across multiple public relays. Messages can be
-          encrypted so even Nostr relays don't know what they say.
-        </p>
-      </details>
-    </section>
-
-    {/* ── The map ───────────────────────────────────────────────────────── */}
-    <section class="map" data-rise>
-      <h2>Where everything is</h2>
-      <ul class="cards">
-        {
-          CARDS.map((card) => (
-            <li>
-              <a
-                class="card"
-                href={card.href}
-                rel={card.external ? "noreferrer" : undefined}
-              >
-                <span class="card-cue">{card.cue}</span>
-                <h3>{card.title}</h3>
-                <p>{card.body}</p>
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </section>
-
-    {/* ── The closer ────────────────────────────────────────────────────────
-        The ask, arriving with its reasons still on screen. The padding clears
-        the gradient floor below, which paints OVER this section: centered
-        content in a screen-tall box would otherwise put the button inside the
-        darkest band. */}
-    <section class="closer" data-rise>
-      <h2>Everything, on every deck</h2>
-      <p>
-        Text, voice and video — on Linux, Windows, macOS, Android, iPhone and
-        right here in your browser. These docs cover all of it, and the servers
-        underneath it that you are free not to trust.
-      </p>
-      <a class="btn btn-primary" href="/how-it-works/">Start reading</a>
-    </section>
-
-    {/* The floor of the page. Absolutely placed rather than appended in flow,
-        so it darkens the last stretch of sea instead of adding a screenful of
-        scroll after the CTA — reaching the bottom reads as arriving somewhere,
-        not as running out of page. */}
-    <div class="floor" aria-hidden="true"></div>
-  </div>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="/how-it-works/">Read the docs</a>
+      <a class="btn" href="/self-hosting/">Self-host it</a>
+    </div>
+  </section>
 </Landing>
 
 <style>
@@ -225,19 +84,11 @@ const structuredData = {
     pointer-events: none;
   }
 
-  .deck {
+  .hero {
+    /* Above the sea, which the negative margin above has pulled underneath it. */
     position: relative;
     z-index: 10;
-  }
 
-  section {
-    margin-inline: auto;
-    padding-inline: clamp(1.25rem, 5vw, 2rem);
-  }
-
-  /* ── Hero ─────────────────────────────────────────────────────────────── */
-
-  .hero {
     display: flex;
     min-height: 100svh;
     max-width: 36rem;
@@ -245,7 +96,9 @@ const structuredData = {
     align-items: center;
     justify-content: center;
     gap: 2.5rem;
+    margin-inline: auto;
     padding-block: 6rem 4rem;
+    padding-inline: clamp(1.25rem, 5vw, 2rem);
     text-align: center;
   }
 
@@ -264,254 +117,6 @@ const structuredData = {
     width: 100%;
   }
 
-  .cue {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.875rem;
-    color: hsl(var(--muted-foreground));
-    text-decoration: none;
-    transition: color 0.15s ease;
-  }
-  .cue:hover {
-    color: hsl(var(--foreground));
-  }
-  .cue-arrow {
-    font-size: 1rem;
-    line-height: 1;
-    color: hsl(var(--accent2) / 0.75);
-    animation: armada-bob 2.4s ease-in-out infinite;
-  }
-  .cue:hover .cue-arrow {
-    color: hsl(var(--accent2));
-  }
-
   /* The buttons themselves live in `styles/controls.css`, shared with the docs
      pages. Only the hero's own layout of them is here. */
-
-  /* ── The statement ─────────────────────────────────────────────────────── */
-
-  .statement {
-    display: flex;
-    min-height: 100svh;
-    max-width: 64rem;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    padding-block: 4rem;
-    text-align: center;
-    /* The hero's cue targets this, and `scroll-behavior: smooth` on <html>
-       does the travel. */
-    scroll-margin-top: 0;
-  }
-
-  .claim {
-    margin: 0;
-    font-family: var(--font-mono);
-    font-size: clamp(1.5rem, 4.5vw, 2.25rem);
-    font-weight: 700;
-    letter-spacing: -0.025em;
-    line-height: 1.2;
-    text-wrap: balance;
-    color: hsl(var(--foreground));
-  }
-  .claim.muted {
-    color: hsl(var(--muted-foreground));
-  }
-
-  .strip {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 0.625rem 1.5rem;
-    margin: 3.5rem 0 0;
-    padding: 0;
-    list-style: none;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.04em;
-    color: hsl(var(--muted-foreground) / 0.7);
-  }
-  .strip a {
-    color: inherit;
-    text-decoration: underline;
-    text-decoration-color: hsl(var(--muted-foreground) / 0.3);
-    text-underline-offset: 4px;
-    transition: color 0.15s ease;
-  }
-  .strip a:hover {
-    color: hsl(var(--foreground));
-    text-decoration-color: currentColor;
-  }
-
-  .why {
-    max-width: 32rem;
-    margin-top: 1.25rem;
-  }
-  .why summary {
-    cursor: pointer;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.04em;
-    color: hsl(var(--muted-foreground) / 0.7);
-    list-style: none;
-    transition: color 0.15s ease;
-  }
-  .why summary::-webkit-details-marker {
-    display: none;
-  }
-  .why summary:hover,
-  .why[open] summary {
-    color: hsl(var(--foreground));
-  }
-  .why p {
-    margin: 1.5rem 0 0;
-    font-size: 0.875rem;
-    line-height: 1.7;
-    text-wrap: pretty;
-    color: hsl(var(--muted-foreground));
-  }
-  .why p a {
-    color: hsl(var(--foreground));
-    text-decoration: underline;
-    text-decoration-color: hsl(var(--muted-foreground) / 0.3);
-    text-underline-offset: 4px;
-  }
-  .why p a:hover {
-    text-decoration-color: currentColor;
-  }
-
-  /* ── The map ───────────────────────────────────────────────────────────── */
-
-  .map {
-    max-width: 64rem;
-    padding-block: 6rem;
-  }
-  .map h2,
-  .closer h2 {
-    margin: 0 0 2.5rem;
-    font-family: var(--font-mono);
-    font-size: clamp(1.25rem, 3.5vw, 1.875rem);
-    font-weight: 700;
-    letter-spacing: -0.025em;
-    text-align: center;
-    text-wrap: balance;
-  }
-
-  /* Two columns, not `auto-fit`: there are four cards, and at a wide viewport
-     auto-fit fits three of them and leaves the fourth alone on a second row.
-     A fixed 2×2 also matches how the four read — two rows of a pair, the site
-     itself above and the things it points at below. */
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  @media (max-width: 46rem) {
-    .cards {
-      grid-template-columns: minmax(0, 1fr);
-    }
-  }
-
-  /* Content surfaces take the soft radius, not the near-sharp chrome one —
-     the app's two-radii system, where shape says whether a thing is hull or
-     cargo. */
-  .card {
-    display: flex;
-    height: 100%;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 1.5rem;
-    border: 1px solid hsl(var(--border) / 0.6);
-    border-radius: var(--radius);
-    background: hsl(var(--card) / 0.72);
-    backdrop-filter: blur(6px);
-    color: inherit;
-    text-decoration: none;
-    transition:
-      border-color 0.15s ease,
-      background-color 0.15s ease,
-      transform 0.15s ease;
-  }
-  .card:hover {
-    border-color: hsl(var(--primary) / 0.6);
-    background: hsl(var(--card) / 0.9);
-    transform: translateY(-2px);
-  }
-
-  .card-cue {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: hsl(var(--accent2));
-  }
-  .card h3 {
-    margin: 0;
-    font-family: var(--font-mono);
-    font-size: 1.0625rem;
-    font-weight: 700;
-    letter-spacing: -0.015em;
-    color: hsl(var(--foreground));
-  }
-  .card p {
-    margin: 0;
-    font-size: 0.875rem;
-    line-height: 1.6;
-    text-wrap: pretty;
-    color: hsl(var(--muted-foreground));
-  }
-
-  /* ── The closer ────────────────────────────────────────────────────────── */
-
-  .closer {
-    display: flex;
-    max-width: 42rem;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-    padding-block: 4rem 14rem;
-    text-align: center;
-  }
-  .closer h2 {
-    margin-bottom: 0;
-  }
-  .closer p {
-    max-width: 36rem;
-    margin: 0;
-    font-size: 1rem;
-    line-height: 1.7;
-    text-wrap: pretty;
-    color: hsl(var(--muted-foreground));
-  }
-
-  .floor {
-    position: absolute;
-    inset: auto 0 0;
-    height: 14rem;
-    pointer-events: none;
-    background: linear-gradient(
-      to bottom,
-      transparent,
-      hsl(var(--chrome-deep) / 0.55),
-      hsl(var(--chrome-deep))
-    );
-  }
-
-  /* ── Scroll-in ─────────────────────────────────────────────────────────
-     `[data-rise-armed]` is set by the observer script in `Landing.astro`, so a
-     page with no JS never hides anything: the resting state is visible, and
-     only a runtime that has committed to un-hiding it may hide it first. */
-  [data-rise][data-rise-armed] {
-    opacity: 0;
-  }
-  [data-rise][data-rise-in] {
-    animation: armada-rise 0.7s ease-out both;
-  }
 </style>
